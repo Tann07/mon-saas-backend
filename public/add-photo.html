@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Téléverser des Souvenirs — Mon SaaS Photo</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 VARIABLES DE NOTRE IDENTITÉ VISUELLE */
+        :root {
+            --bg-boho: #FAF6F0;          /* Crème doux, organique */
+            --primary-terracotta: #C97A63; /* Terracotta chaud */
+            --primary-hover: #B26550;
+            --secondary-sage: #8DA191;    /* Vert sauge pour le côté "Tech Nature" */
+            --text-dark: #2D2A26;         /* Anthracite très doux */
+            --text-light: #766E65;        /* Texte secondaire */
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --radius-lg: 24px;
+            --radius-md: 14px;
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ✨ RESET & FONDAMENTAUX */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-boho); 
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* 🧭 NAV BAR DESIGNED AS A FLOATING GLASS ELEMENT */
+        .navbar { 
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 18px 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid rgba(201, 122, 99, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-brand { 
+            font-family: 'Playfair Display', serif;
+            font-size: 22px; 
+            font-weight: 700; 
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+        }
+        .nav-links { display: flex; gap: 28px; align-items: center; }
+        .navbar a { 
+            color: var(--text-light); 
+            text-decoration: none; 
+            font-weight: 500; 
+            font-size: 14px;
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+        .navbar a:hover { color: var(--primary-terracotta); }
+        /* Petite ligne d'effet au survol */
+        .navbar a::after {
+            content: ''; position: absolute; bottom: -6px; left: 0; width: 0; height: 2px;
+            background-color: var(--primary-terracotta); transition: var(--transition-smooth);
+        }
+        .navbar a:hover::after { width: 100%; }
+        
+        #logoutBtn { 
+            color: #C96363 !important; 
+            background: rgba(217, 83, 79, 0.08);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+        }
+        #logoutBtn:hover { background: rgba(217, 83, 79, 0.15); }
+        #logoutBtn::after { display: none; }
+
+        /* 📦 CONTENEUR PRINCIPAL */
+        .main-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex: 1;
+            padding: 40px 20px; 
+        }
+        
+        .form-container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: var(--radius-lg); 
+            box-shadow: 0 20px 50px rgba(74, 58, 49, 0.06); 
+            width: 100%; 
+            max-width: 520px; 
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(240, 230, 220, 0.8);
+        }
+        
+        h2 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            margin-bottom: 30px; 
+            text-align: center; 
+            color: var(--text-dark); 
+            font-weight: 600;
+        }
+
+        /* 🖼️ ZONE DE GLISSER-DÉPOSER (DROPZONE TECH & FLUIDE) */
+        .dropzone-wrapper {
+            position: relative;
+            border: 2px dashed #E5DCD3;
+            border-radius: var(--radius-md);
+            padding: 32px 20px;
+            text-align: center;
+            background: #FCFAF7;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            margin-bottom: 24px;
+        }
+        .dropzone-wrapper:hover, .dropzone-wrapper.dragover {
+            border-color: var(--primary-terracotta);
+            background: rgba(201, 122, 99, 0.03);
+            transform: scale(1.01);
+        }
+        .dropzone-wrapper input[type="file"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+        .dropzone-icon {
+            font-size: 38px; margin-bottom: 12px; display: inline-block;
+            transition: var(--transition-smooth);
+        }
+        .dropzone-wrapper:hover .dropzone-icon {
+            transform: translateY(-4px) scale(1.1);
+        }
+        .dropzone-text { font-size: 14px; color: var(--text-dark); font-weight: 500; }
+        .dropzone-subtext { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+        
+        /* Petit badge pour indiquer le nombre de fichiers chargés */
+        #fileCounter {
+            display: none; margin-top: 12px; font-size: 12px; font-weight: 600;
+            color: var(--secondary-sage); background: rgba(141, 161, 145, 0.12);
+            padding: 4px 12px; border-radius: 20px; inline-size: max-content; margin-left: auto; margin-right: auto;
+        }
+
+        /* 📝 CHAMP FORMULAIRES */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block; font-size: 12px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--text-light); margin-bottom: 6px;
+        }
+        
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 14px 18px; 
+            border: 1px solid #E5DCD3; 
+            border-radius: var(--radius-md); 
+            background-color: #FAFAFA;
+            font-family: inherit; 
+            font-size: 14px;
+            color: var(--text-dark);
+            transition: var(--transition-smooth);
+            outline: none;
+        }
+        input[type="text"]:focus, textarea:focus { 
+            border-color: var(--secondary-sage); 
+            background-color: #FFF;
+            box-shadow: 0 0 0 4px rgba(141, 161, 145, 0.1);
+        }
+        textarea { height: 90px; resize: none; }
+        
+        .info-optional { 
+            font-size: 11px; color: #A69E94; position: absolute; right: 4px; top: 0; font-style: italic;
+        }
+
+        /* ⚡ BOUTON DE SOUMISSION INTÉLLIGENT */
+        button[type="submit"] { 
+            width: 100%; 
+            padding: 16px; 
+            background-color: var(--primary-terracotta); 
+            color: white; 
+            border: none; 
+            border-radius: var(--radius-md); 
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: 600; 
+            transition: var(--transition-smooth);
+            box-shadow: 0 10px 25px rgba(201, 122, 99, 0.2);
+            margin-top: 10px;
+        }
+        button[type="submit"]:hover { 
+            background-color: var(--primary-hover); 
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(201, 122, 99, 0.3);
+        }
+        button[type="submit"]:active { transform: translateY(0); }
+
+        /* 🔔 NOTIFICATIONS / MESSAGES SYSTÈME DYNAMIQUES */
+        #message { 
+            margin-top: 20px; 
+            text-align: center; 
+            font-size: 14px; 
+            font-weight: 500; 
+            padding: 12px;
+            border-radius: var(--radius-md);
+            transition: var(--transition-smooth);
+            display: none; /* Caché par défaut, géré fluidement */
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-brand">🌾 Mon SaaS Photo</div>
+    <div class="nav-links">
+        <a href="/dashboard.html">Mes Albums</a>
+        <a href="/gallery.html">Retour à l'Album</a>
+        <a href="#" id="logoutBtn">Déconnexion</a>
+    </div>
+</nav>
+
+<div class="main-container">
+    <div class="form-container">
+        <h2>Créer une Galerie</h2>
+        
+        <form id="photoForm">
+            <div class="dropzone-wrapper" id="dropzone">
+                <span class="dropzone-icon">✨</span>
+                <p class="dropzone-text">Glissez vos images ici ou <span style="color: var(--primary-terracotta); font-weight:600;">parcourez</span></p>
+                <p class="dropzone-subtext">Fichiers JPEG, PNG acceptés</p>
+                <input type="file" id="fichierImage" accept="image/*" multiple required>
+                <div id="fileCounter">0 fichier(s) sélectionné(s)</div>
+            </div>
+            
+            <div class="input-group">
+                <label for="titre">Titre</label>
+                <span class="info-optional">Optionnel</span>
+                <input type="text" id="titre" placeholder="Laissé vide = nom du fichier">
+            </div>
+            
+            <div class="input-group">
+                <label for="description">Description</label>
+                <span class="info-optional">Optionnel</span>
+                <textarea id="description" placeholder="Racontez l'histoire de ce lot..."></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label for="tags">Mots-clés</label>
+                <span class="info-optional">Optionnel</span>
+                <input type="text" id="tags" placeholder="ex: mariage, sainte-lucie, été">
+            </div>
+            
+            <button type="submit">Lancer la magie</button>
+        </form>
+        
+        <div id="message"></div>
+    </div>
+</div>
+
+<script>
+    // --- GESTION DE L'UI DYNAMIQUE (Micro-interactions) ---
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fichierImage');
+    const fileCounter = document.getElementById('fileCounter');
+
+    // Effets visuels quand on glisse un fichier au-dessus
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
+    });
+
+    // Compteur de fichiers fluide
+    fileInput.addEventListener('change', () => {
+        const count = fileInput.files.length;
+        if(count > 0) {
+            fileCounter.innerText = `✨ ${count} image${count > 1 ? 's' : ''} prête${count > 1 ? 's' : ''}`;
+            fileCounter.style.display = 'inline-block';
+        } else {
+            fileCounter.style.display = 'none';
+        }
+    });
+
+    // --- FONCTIONNALITÉS JAVASCRIPT REPRISES DE TON CODE ORIGINAL ---
+    const token = localStorage.getItem('monBadgePhoto');
+    if (!token) window.location.replace('/index.html');
+
+    // Bouton Déconnexion
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.replace('/index.html');
+    });
+
+    document.getElementById('photoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const titre = document.getElementById('titre').value;
+        const description = document.getElementById('description').value;
+        const tags = document.getElementById('tags').value;
+        const inputFichiers = fileInput.files; 
+        const albumId = localStorage.getItem('currentAlbumId');
+        const messageDiv = document.getElementById('message');
+
+        const formData = new FormData();
+        formData.append('titre', titre);
+        formData.append('description', description);
+        formData.append('tags', tags);
+        formData.append('albumId', albumId);
+        
+        for (let i = 0; i < inputFichiers.length; i++) {
+            formData.append('image', inputFichiers[i]);
+        }
+
+        try {
+            // Changement de style dynamique pour le message d'attente (Design Système Boho-Tech)
+            messageDiv.style.display = "block";
+            messageDiv.style.color = "#8A6D3B";
+            messageDiv.style.backgroundColor = "#FCF8E3";
+            messageDiv.style.border = "1px solid #FBEED5";
+            messageDiv.innerText = "⏳ Connexion à l'IA... Téléversement en cours...";
+
+            const response = await fetch('/api/photos/add', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                messageDiv.style.color = "#3C763D";
+                messageDiv.style.backgroundColor = "#DFF0D8";
+                messageDiv.style.border = "1px solid #D6E9C6";
+                messageDiv.innerText = `✅ ${data.message}`;
+                document.getElementById('photoForm').reset();
+                fileCounter.style.display = 'none';
+                setTimeout(() => { window.location.href = '/gallery.html'; }, 1500);
+            } else {
+                messageDiv.style.color = "#A94442";
+                messageDiv.style.backgroundColor = "#F2DEDE";
+                messageDiv.style.border = "1px solid #EBCCD1";
+                messageDiv.innerText = `❌ ${data.message}`;
+            }
+        } catch (error) {
+            messageDiv.style.display = "block";
+            messageDiv.style.color = "#A94442";
+            messageDiv.style.backgroundColor = "#F2DEDE";
+            messageDiv.style.border = "1px solid #EBCCD1";
+            messageDiv.innerText = "❌ Impossible de joindre le serveur.";
+        }
+    });
+</script>
+</body>
+</html>

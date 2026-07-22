@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centre de Contrôle — Mon SaaS Média</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 DESIGN SYSTEM BOHO-TECH */
+        :root {
+            --bg-boho: #FAF6F0;           /* Crème lin doux */
+            --primary-terracotta: #C97A63;  /* Ocre / Terre cuite */
+            --primary-hover: #B26550;
+            --secondary-sage: #8DA191;     /* Vert sauge */
+            --text-dark: #2D2A26;          /* Charbon minéral */
+            --text-light: #766E65;         /* Sable chaud */
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --radius-lg: 28px;
+            --radius-md: 18px;
+            --radius-sm: 10px;
+            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ✨ RAFFINEMENT GLOBAL */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-boho); 
+            color: var(--text-dark); 
+            padding: 120px 24px 60px 24px; 
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 🧭 NAV BAR FLOTTANTE */
+        .navbar { 
+            position: fixed; top: 0; left: 0; right: 0; height: 80px; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 40px; 
+            border-bottom: 1px solid rgba(201, 122, 99, 0.06); 
+            z-index: 1000; 
+            box-sizing: border-box;
+        }
+        .navbar-brand { 
+            font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; letter-spacing: -0.3px;
+        }
+        .nav-links { display: flex; align-items: center; gap: 8px; }
+        .nav-links a { 
+            color: var(--text-light); text-decoration: none; font-weight: 600; font-size: 14px; 
+            padding: 10px 16px; border-radius: var(--radius-sm); transition: var(--transition-smooth);
+        }
+        .nav-links a:hover { color: var(--text-dark); background: rgba(118, 110, 101, 0.05); }
+        
+        .nav-links a.active-link { color: var(--primary-terracotta); background: rgba(201, 122, 99, 0.06); }
+        .nav-links a.studio-link { color: #8A65B2; background: rgba(138, 101, 178, 0.06); }
+        .nav-links a.studio-link:hover { background: rgba(138, 101, 178, 0.12); }
+        #logoutBtn { color: #C96363; }
+        #logoutBtn:hover { background: rgba(201, 99, 99, 0.06); }
+
+        .container { max-width: 1140px; margin: 0 auto; }
+        
+        /* 🏠 PANNEAU DE BIENVENUE */
+        .welcome-panel { 
+            background: white; padding: 45px; border-radius: var(--radius-lg); 
+            box-shadow: 0 15px 40px rgba(74, 58, 49, 0.03); margin-bottom: 40px; 
+            border: 1px solid rgba(240, 230, 220, 0.6);
+            position: relative; overflow: hidden;
+        }
+        .welcome-panel::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px;
+            border-radius: 50%; background: radial-gradient(circle, rgba(201,122,99,0.04) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+        .welcome-panel h1 { 
+            font-family: 'Playfair Display', serif; font-size: 36px; color: var(--text-dark); font-weight: 600; margin-bottom: 12px;
+        }
+        .welcome-panel p { color: var(--text-light); font-size: 15px; line-height: 1.6; max-width: 750px; }
+        
+        /* ⚡ ACTIONS RAPIDES */
+        .quick-actions { display: flex; gap: 16px; margin-top: 32px; flex-wrap: wrap; }
+        .btn-action { 
+            background: var(--text-dark); color: white; text-decoration: none; padding: 14px 28px; 
+            border-radius: var(--radius-md); font-weight: 600; font-size: 14px; transition: var(--transition-smooth); 
+            box-shadow: 0 4px 15px rgba(45, 42, 38, 0.15);
+        }
+        .btn-action:hover { background: #44403A; transform: translateY(-2px); }
+        .btn-action.blue { 
+            background: var(--primary-terracotta); 
+            box-shadow: 0 10px 25px rgba(201, 122, 99, 0.2);
+        }
+        .btn-action.blue:hover { background: var(--primary-hover); box-shadow: 0 15px 30px rgba(201, 122, 99, 0.3); }
+        
+        /* 📊 GRILLE DES STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; margin-bottom: 40px; }
+        .stat-card { 
+            background: white; padding: 32px; border-radius: var(--radius-lg); 
+            box-shadow: 0 10px 30px rgba(74, 58, 49, 0.02); text-align: left; cursor: pointer; 
+            transition: var(--transition-smooth); border: 1px solid rgba(240, 230, 220, 0.6);
+            display: flex; flex-direction: column; justify-content: space-between;
+            position: relative;
+        }
+        .stat-card:hover { 
+            transform: translateY(-5px); box-shadow: 0 20px 40px rgba(74, 58, 49, 0.08); 
+            border-color: rgba(201, 122, 99, 0.2);
+        }
+        .stat-card .label-container { display: flex; justify-content: space-between; align-items: center; }
+        .stat-card span { font-size: 11px; color: var(--text-light); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card h2 { margin: 20px 0 10px 0; font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 600; line-height: 1; }
+        
+        .stat-card .arrow-indicator {
+            font-size: 12px; font-weight: 600; margin-top: auto; transition: var(--transition-smooth);
+            display: flex; align-items: center; gap: 4px;
+        }
+        .stat-card:hover .arrow-indicator { transform: translateX(4px); }
+
+        /* BARRE DE PROGRESSION */
+        .progress-container { background-color: #EFEAE4; border-radius: 20px; height: 8px; width: 100%; overflow: hidden; margin-top: 16px; }
+        .progress-bar { 
+            background: linear-gradient(90deg, var(--primary-terracotta) 0%, var(--secondary-sage) 100%); 
+            height: 100%; width: 0%; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+
+        /* 📸 SECTION FLUX LIVE & ATELIER IA */
+        .live-section {
+            background: white; padding: 40px; border-radius: var(--radius-lg);
+            box-shadow: 0 15px 40px rgba(74, 58, 49, 0.03); border: 1px solid rgba(240, 230, 220, 0.6);
+            margin-bottom: 40px;
+        }
+        .live-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;
+        }
+        .live-header h2 {
+            font-family: 'Playfair Display', serif; font-size: 26px; color: var(--text-dark); font-weight: 600;
+        }
+        .live-badge {
+            background: rgba(141, 161, 145, 0.15); color: var(--secondary-sage); font-size: 12px; font-weight: 700;
+            padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* GRILLE DE MÉDIAS DYNAMIQUES (PHOTOS & VIDÉOS) */
+        .photos-stream-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px;
+        }
+        .photo-card-ia {
+            background: #FCFAF7; border-radius: var(--radius-md); overflow: hidden;
+            border: 1px solid rgba(229, 220, 211, 0.6); transition: var(--transition-smooth);
+            display: flex; flex-direction: column; position: relative;
+        }
+        .photo-card-ia:hover {
+            transform: translateY(-4px); box-shadow: 0 12px 25px rgba(74, 58, 49, 0.08);
+        }
+        .photo-img-wrapper {
+            width: 100%; height: 200px; background-color: #1E1C19; overflow: hidden; position: relative;
+        }
+        .photo-img-wrapper img, .photo-img-wrapper video {
+            width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease;
+        }
+        .photo-card-ia:hover .photo-img-wrapper img { transform: scale(1.05); }
+
+        .badge-video-type {
+            position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7);
+            color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; z-index: 2;
+        }
+
+        .photo-details { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .photo-title { font-weight: 600; font-size: 14px; color: var(--text-dark); margin-bottom: 8px; }
+        
+        .ia-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .ia-tag {
+            background: rgba(201, 122, 99, 0.08); color: var(--primary-terracotta);
+            font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px;
+        }
+
+        .ia-caption-box {
+            background: white; border-radius: var(--radius-sm); padding: 10px;
+            border: 1px dashed rgba(201, 122, 99, 0.3); font-size: 12px; color: var(--text-light);
+            line-height: 1.4; margin-top: auto; position: relative;
+        }
+        .btn-copy-caption {
+            background: var(--primary-terracotta); color: white; border: none; border-radius: 4px;
+            font-size: 10px; font-weight: 600; padding: 4px 8px; cursor: pointer; margin-top: 8px;
+            width: 100%; transition: background 0.2s;
+        }
+        .btn-copy-caption:hover { background: var(--primary-hover); }
+
+        .empty-stream {
+            text-align: center; padding: 40px; color: var(--text-light); font-size: 14px; grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-brand">🌾 Mon SaaS Média</div>
+    <div class="nav-links">
+        <a href="/dashboard.html" class="active-link">Dashboard</a>
+        <a href="/my-albums.html">Mes Albums</a>
+        <a href="/editor.html" class="studio-link">Studio Retouche</a>
+        <a href="/profile.html">Mon Compte</a>
+        <a href="#" id="logoutBtn">Déconnexion</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="welcome-panel">
+        <h1>Content de vous revoir</h1>
+        <p>Prenez le contrôle de vos galeries. Organisez vos clichés et vos vidéos assistés par notre IA, surveillez l'état de votre infrastructure Cloud et sublimez vos créations instantanément.</p>
+        
+        <div class="quick-actions">
+            <a href="/my-albums.html" class="btn-action blue">Gérer mes Albums</a>
+            <a href="/all-photos.html" class="btn-action">Voir la pellicule globale</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card" id="btnStatsAlbums">
+            <div class="label-container">
+                <span>Espaces Albums</span>
+                <span style="font-size: 16px;">📁</span>
+            </div>
+            <h2 id="statAlbums" style="color: var(--primary-terracotta);">0</h2>
+            <div class="arrow-indicator" style="color: var(--primary-terracotta);">Parcourir les dossiers <span>→</span></div>
+        </div>
+        
+        <div class="stat-card" id="btnStatsPhotos">
+            <div class="label-container">
+                <span>Médias Indexés</span>
+                <span style="font-size: 16px;">🖼️</span>
+            </div>
+            <h2 id="statPhotos" style="color: var(--secondary-sage);">0</h2>
+            <div class="arrow-indicator" style="color: var(--secondary-sage);">Explorer la bibliothèque <span>→</span></div>
+        </div>
+        
+        <div class="stat-card" id="btnStatsStockage">
+            <div class="label-container">
+                <span>Volume Cloud</span>
+                <span style="font-size: 16px;">☁️</span>
+            </div>
+            <h2 id="statStockageText" style="color: var(--text-dark); font-size: 20px; font-family: 'Plus Jakarta Sans', sans-serif; margin: 26px 0 4px 0;">
+                0 Mo / 15 Go
+            </h2>
+            <div class="progress-container">
+                <div id="statStockageBarre" class="progress-bar"></div>
+            </div>
+            <div class="arrow-indicator" style="color: var(--text-light); margin-top: 14px;">Ajuster mon forfait <span>→</span></div>
+        </div>
+    </div>
+
+    <!-- 📸 SECTION FLUX LIVE PHOTOS & VIDÉOS -->
+    <div class="live-section">
+        <div class="live-header">
+            <h2>📸 Derniers Médias Synchronisés & Atelier IA</h2>
+            <span class="live-badge">• Direct Smartphone</span>
+        </div>
+
+        <div class="photos-stream-grid" id="photosStreamContainer">
+            <div class="empty-stream">⏳ Chargement des derniers visuels...</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const token = localStorage.getItem('monBadgePhoto');
+    if (!token) window.location.replace('/index.html');
+
+    document.getElementById('btnStatsAlbums').addEventListener('click', () => { window.location.href = '/my-albums.html'; });
+    document.getElementById('btnStatsPhotos').addEventListener('click', () => { window.location.href = '/all-photos.html'; });
+    document.getElementById('btnStatsStockage').addEventListener('click', () => { window.location.href = '/stats.html'; });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => { 
+        localStorage.clear(); 
+        window.location.replace('/index.html'); 
+    });
+
+    function copierLegende(texte) {
+        navigator.clipboard.writeText(texte).then(() => {
+            alert("✨ Légende copiée dans le presse-papier !");
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        // 1. Récupération des Statistiques
+        try {
+            const response = await fetch('/api/albums/stats', { headers: { 'Authorization': `Bearer ${token}` } });
+            const stats = await response.json();
+            
+            document.getElementById('statAlbums').innerText = stats.albums;
+            document.getElementById('statPhotos').innerText = stats.photos;
+            
+            const limiteEnGo = stats.stockageLimite >= 1024 ? (stats.stockageLimite / 1024).toFixed(0) : stats.stockageLimite;
+            document.getElementById('statStockageText').innerText = `${stats.stockageUtilise} Mo / ${limiteEnGo} Go`;
+            
+            setTimeout(() => {
+                const pourcentage = Math.min((stats.stockageUtilise / stats.stockageLimite) * 100, 100);
+                document.getElementById('statStockageBarre').style.width = `${pourcentage}%`;
+            }, 100);
+
+        } catch (error) { 
+            console.error("Erreur stats :", error); 
+        }
+
+        // 2. Récupération des 4 Derniers Médias (Photos & Vidéos)
+        try {
+            const resPhotos = await fetch('/api/photos/my-photos', { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+
+            if (!resPhotos.ok) throw new Error(`Erreur serveur (${resPhotos.status})`);
+
+            const photos = await resPhotos.json();
+            const container = document.getElementById('photosStreamContainer');
+
+            if (Array.isArray(photos) && photos.length > 0) {
+                const derniersMedias = photos.slice(0, 4);
+                container.innerHTML = '';
+
+                derniersMedias.forEach(item => {
+                    let url = item.urlImage || '';
+                    if (url && !url.startsWith('http')) {
+                        url = window.location.origin + (url.startsWith('/') ? '' : '/') + url;
+                    }
+
+                    const estVideo = item.typeMedia === 'video' || url.endsWith('.mp4') || url.endsWith('.mov');
+                    const tagsList = item.tags && item.tags.length > 0 ? item.tags : (estVideo ? ['Clip', 'HD'] : ['Studio', 'HD']);
+                    const caption = item.suggestionInstagram || "Moment capturé en haute définition.";
+
+                    const tagsHTML = tagsList.map(t => `<span class="ia-tag">#${t}</span>`).join('');
+
+                    const mediaWrapperHTML = estVideo
+                        ? `<div class="photo-img-wrapper">
+                             <div class="badge-video-type">🎬 VIDÉO</div>
+                             <video src="${url}#t=0.5" preload="metadata" muted playsinline></video>
+                           </div>`
+                        : `<div class="photo-img-wrapper">
+                             <img src="${url}" alt="${item.titre || 'Photo'}" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Indisponible'">
+                           </div>`;
+
+                    const cardHTML = `
+                        <div class="photo-card-ia">
+                            ${mediaWrapperHTML}
+                            <div class="photo-details">
+                                <div class="photo-title">${item.titre || 'Sans titre'}</div>
+                                <div class="ia-tags-container">${tagsHTML}</div>
+                                <div class="ia-caption-box">
+                                    🤖 <em>"${caption}"</em>
+                                    <button class="btn-copy-caption" onclick="copierLegende('${caption.replace(/'/g, "\\'")}')">📋 Copier pour Insta</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHTML;
+                });
+            } else {
+                container.innerHTML = `<div class="empty-stream">📷 Aucun média synchronisé pour le moment. Envoyez-en un depuis votre smartphone !</div>`;
+            }
+        } catch (error) {
+            console.error("Erreur chargement du flux :", error);
+            document.getElementById('photosStreamContainer').innerHTML = `<div class="empty-stream">⚠️ Impossible de charger le flux live (${error.message}).</div>`;
+        }
+    });
+</script>
+</body>
+</html>

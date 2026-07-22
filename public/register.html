@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un compte — Mon SaaS Photo</title>
+    
+    <!-- Fonts : Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 DESIGN SYSTEM BOHO-TECH */
+        :root {
+            --bg-boho: #FAF6F0;           /* Crème lin doux */
+            --primary-terracotta: #C97A63;  /* Ocre / Terre cuite */
+            --primary-hover: #B26550;
+            --secondary-sage: #8DA191;     /* Vert sauge */
+            --text-dark: #2D2A26;          /* Charbon minéral */
+            --text-light: #766E65;         /* Sable chaud */
+            --radius-lg: 24px;
+            --radius-md: 14px;
+            --transition-fluid: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ✨ RESET & FULLSCREEN SPLIT */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-boho); 
+            color: var(--text-dark); 
+            min-height: 100vh;
+            display: flex;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 🖼️ SPLIT LAYOUT : PANNEAU VISUEL GAUCHE (COHÉRENCE TUNNEL D'ENTRÉE) */
+        .register-visual-panel {
+            flex: 1.2;
+            background: linear-gradient(135deg, #FAF6F0 0%, #EFEAE4 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px;
+            overflow: hidden;
+            border-right: 1px solid rgba(201, 122, 99, 0.06);
+        }
+        .register-visual-panel::before {
+            content: ''; position: absolute; top: -10%; right: -10%; width: 500px; height: 500px;
+            border-radius: 50%; background: radial-gradient(circle, rgba(141, 161, 145, 0.05) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+        .brand-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .visual-statement {
+            max-width: 480px;
+            margin: auto 0;
+            z-index: 2;
+        }
+        .visual-statement h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 46px;
+            font-weight: 500;
+            line-height: 1.2;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+        }
+        .visual-statement p {
+            color: var(--text-light);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .visual-footer {
+            font-size: 12px;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        /* 🔐 SPLIT LAYOUT : FORMULAIRE DROITE (TECH MINIMALISTE) */
+        .register-form-panel {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background-color: white;
+        }
+        .auth-box { 
+            width: 100%; 
+            max-width: 380px; 
+            animation: formAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            text-align: left;
+        }
+        
+        h2 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            margin-bottom: 6px; 
+            color: var(--text-dark); 
+            font-weight: 600;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        /* 🏷️ BADGES FORFAITS BOHO-CHIC */
+        .badge-pack { 
+            display: inline-block; 
+            padding: 8px 16px; 
+            border-radius: 30px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            margin-bottom: 28px;
+            letter-spacing: 0.3px;
+            transition: var(--transition-fluid);
+        }
+        .badge-pack-default { background: rgba(141, 161, 145, 0.15); color: var(--secondary-sage); }
+        .badge-pack-premium { background: rgba(201, 122, 99, 0.15); color: var(--primary-terracotta); }
+        .badge-pack-pro { background: #F3EAF5; color: #9C27B0; }
+
+        /* CHAMPS DE SAISIE */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        input { 
+            width: 100%; 
+            padding: 16px 18px; 
+            border: 1px solid #E5DCD3; 
+            border-radius: var(--radius-md); 
+            font-family: inherit;
+            font-size: 14px;
+            background-color: #FCFAF7;
+            color: var(--text-dark);
+            transition: var(--transition-fluid);
+            outline: none;
+        }
+        input:focus { 
+            border-color: var(--primary-terracotta); 
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(201, 122, 99, 0.08);
+        }
+
+        /* BOUTON D'ACCÈS INTÉLLIGENT */
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            background-color: var(--primary-terracotta); 
+            color: white; 
+            border: none; 
+            border-radius: var(--radius-md); 
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: 600;
+            font-family: inherit;
+            transition: var(--transition-fluid);
+            box-shadow: 0 10px 25px rgba(201, 122, 99, 0.15);
+            margin-top: 10px;
+        }
+        .btn:hover { 
+            background-color: var(--primary-hover); 
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(201, 122, 99, 0.25);
+        }
+        .btn:active { transform: translateY(0); }
+
+        /* LIENS DE CONNEXION INTERNES */
+        .login-redirect {
+            font-size: 13px; 
+            color: var(--text-light); 
+            margin-top: 28px; 
+            text-align: center;
+            line-height: 1.5;
+        }
+        .login-redirect a { 
+            color: var(--primary-terracotta); 
+            text-decoration: none; 
+            font-weight: 600;
+            transition: var(--transition-fluid);
+        }
+        .login-redirect a:hover { color: var(--primary-hover); text-decoration: underline; }
+
+        /* BANNIÈRES DE MESSAGES DYNAMIQUES */
+        #message { 
+            margin-top: 24px; 
+            text-align: center; 
+            font-size: 13px; 
+            font-weight: 500; 
+            padding: 12px;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fluid);
+            display: none;
+        }
+
+        /* RESPONSIVE DESIGN (BASCULE FULL-PANEL SUR MOBILE) */
+        @media (max-width: 868px) {
+            body { flex-direction: column; }
+            .register-visual-panel { display: none; }
+            .register-form-panel { background-color: var(--bg-boho); flex: 1; }
+            .auth-box { background: white; padding: 40px 32px; border-radius: var(--radius-lg); box-shadow: 0 10px 35px rgba(74, 58, 49, 0.04); }
+        }
+
+        @keyframes formAppear {
+            from { opacity: 0; transform: translateX(15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Panneau de Gauche : Identité Visuelle -->
+<div class="register-visual-panel">
+    <div class="brand-logo">🌾 Mon SaaS Photo</div>
+    <div class="visual-statement">
+        <h1>Commencez votre histoire.</h1>
+        <p>Rejoignez un espace pensé pour les créateurs de visuels. Façonnez vos archives, invitez vos collaborateurs et profitez d'une fluidité technologique sans fioritures.</p>
+    </div>
+    <div class="visual-footer">© 2026 Creative Studio Cloud. Tous droits réservés.</div>
+</div>
+
+<!-- Panneau de Droite : Formulaire d'inscription -->
+<div class="register-form-panel">
+    <div class="auth-box">
+        <h2>Créer un compte</h2>
+        <p class="subtitle">Initialisez votre atelier numérique</p>
+        
+        <!-- Le badge hérite de sa classe dynamique en JS -->
+        <div class="badge-pack badge-pack-default" id="badgePack">Analyse de la formule...</div>
+        
+        <form id="registerForm">
+            <div class="input-group">
+                <input type="email" id="email" placeholder="Adresse e-mail" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Mot de passe personnalisé" required>
+            </div>
+            
+            <button type="submit" class="btn">Inaugurer mon espace</button>
+            
+            <p class="login-redirect">
+                Déjà artisan chez nous ? <a href="/index.html">Se connecter</a>
+            </p>
+        </form>
+        
+        <div id="message"></div>
+    </div>
+</div>
+
+<script>
+    // --- CONSERVATION STRICHTE DE LA LOGIQUE ET DU CALCUL DU STOCKAGE REÇU ---
+    let pack = localStorage.getItem('packSelectionne') || "Gratuit";
+    const badgePack = document.getElementById('badgePack');
+    
+    // Habillage dynamique du badge selon le pack détecté
+    badgePack.innerText = `🎁 Formule choisie : Pack ${pack}`;
+    if (pack === "Premium") {
+        badgePack.className = "badge-pack badge-pack-premium";
+    } else if (pack === "Pro") {
+        badgePack.className = "badge-pack badge-pack-pro";
+    } else {
+        badgePack.className = "badge-pack badge-pack-default";
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const messageDiv = document.getElementById('message');
+
+        // Détermination de la limite en Mo selon ton architecture backend d'origine
+        let stockageMaxMo = 15360; // 15 Go par défaut
+        if (pack === "Premium") stockageMaxMo = 1024000; // 1 To
+        if (pack === "Pro") stockageMaxMo = 5120000; // 5 To
+
+        try {
+            messageDiv.style.display = "block";
+            messageDiv.style.color = "#8A6D3B";
+            messageDiv.style.backgroundColor = "#FCF8E3";
+            messageDiv.style.border = "1px solid #FBEED5";
+            messageDiv.innerText = "⏳ Structuration de votre cloud personnel...";
+
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, forfait: pack, stockageMaxMo })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                messageDiv.style.color = "#3C763D";
+                messageDiv.style.backgroundColor = "#DFF0D8";
+                messageDiv.style.border = "1px solid #D6E9C6";
+                messageDiv.innerText = "🎉 Espace créé avec succès ! Redirection vers l'authentification...";
+                
+                setTimeout(() => {
+                    window.location.href = '/index.html'; 
+                }, 1600);
+            } else {
+                messageDiv.style.color = "#A94442";
+                messageDiv.style.backgroundColor = "#F2DEDE";
+                messageDiv.style.border = "1px solid #EBCCD1";
+                messageDiv.innerText = `❌ ${data.message}`;
+            }
+        } catch (error) {
+            messageDiv.style.color = "#A94442";
+            messageDiv.style.backgroundColor = "#F2DEDE";
+            messageDiv.style.border = "1px solid #EBCCD1";
+            messageDiv.innerText = "❌ Impossible d'établir la liaison avec le serveur.";
+        }
+    });
+</script>
+</body>
+</html>

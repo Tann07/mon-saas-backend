@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse & Forfaits — Mon SaaS Photo</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 DESIGN SYSTEM BOHO-TECH */
+        :root {
+            --bg-boho: #FAF6F0;           /* Crème lin doux */
+            --primary-terracotta: #C97A63;  /* Ocre signature */
+            --primary-hover: #B26550;
+            --secondary-sage: #8DA191;     /* Vert sauge pour le statut actif */
+            --secondary-sage-hover: #7A8E7E;
+            --text-dark: #2D2A26;          /* Charbon minéral */
+            --text-light: #766E65;         /* Sable chaud */
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
+            --transition-fluid: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ✨ RAFFINEMENT GLOBAL */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-boho); 
+            color: var(--text-dark); 
+            padding-top: 110px; 
+            padding-bottom: 60px;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 🧭 NAV BAR FLOTTANTE */
+        .navbar { 
+            position: fixed; top: 0; left: 0; right: 0; height: 75px; 
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 40px; 
+            border-bottom: 1px solid rgba(201, 122, 99, 0.06); z-index: 1000; 
+        }
+        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+        .navbar a { 
+            color: var(--text-light); text-decoration: none; font-weight: 600; font-size: 14px; 
+            padding: 8px 16px; border-radius: var(--radius-sm); transition: var(--transition-fluid);
+            background: rgba(201, 122, 99, 0.05);
+        }
+        .navbar a:hover { color: white; background: var(--primary-terracotta); }
+        
+        .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+        
+        /* 📊 TIROIR ANALYTIQUE */
+        .box { 
+            background: white; padding: 40px; border-radius: var(--radius-lg); 
+            box-shadow: 0 10px 30px rgba(74, 58, 49, 0.02); margin-bottom: 45px; 
+            border: 1px solid rgba(240, 230, 220, 0.7);
+        }
+        .box h2 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+        
+        .analytique-box { 
+            background: #FCFAF7; border-left: 4px solid var(--primary-terracotta); 
+            padding: 24px; border-radius: var(--radius-sm); font-size: 15px; 
+            line-height: 1.6; color: var(--text-dark); margin-bottom: 24px;
+        }
+        .analytique-box strong { color: var(--text-light); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Jauge Premium Amortie */
+        .progress-container { background-color: #EFEAE4; border-radius: 30px; height: 14px; width: 100%; overflow: hidden; }
+        .progress-bar { 
+            background: linear-gradient(90deg, var(--primary-terracotta), var(--secondary-sage)); 
+            height: 100%; width: 0%; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+
+        h2.section-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 600; margin-bottom: 8px; }
+
+        /* 💳 GRILLE DES CARTES DE FORFAIT */
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 28px; }
+        .price-card { 
+            background: white; padding: 40px 32px; border-radius: var(--radius-lg); 
+            box-shadow: 0 10px 25px rgba(74, 58, 49, 0.02); text-align: center; 
+            border: 1px solid rgba(240, 230, 220, 0.8); position: relative;
+            display: flex; flex-direction: column; justify-content: space-between; min-height: 380px;
+            transition: var(--transition-fluid);
+        }
+        .price-card:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(74, 58, 49, 0.06); }
+        
+        /* État Actif : L'offre possédée par l'utilisateur */
+        .price-card.active { 
+            border-color: var(--secondary-sage); 
+            background: #FAFBF9;
+            box-shadow: 0 15px 35px rgba(141, 161, 145, 0.08);
+        }
+        
+        /* Badge flottant délicat */
+        .badge-current { 
+            position: absolute; top: -13px; left: 50%; transform: translateX(-50%); 
+            background: var(--secondary-sage); color: white; padding: 5px 16px; 
+            border-radius: 30px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(141, 161, 145, 0.2);
+        }
+        
+        .price-card h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+        .price-card .storage-size { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 38px; font-weight: 700; color: var(--text-dark); }
+        .price-card .price { font-size: 16px; color: var(--text-light); font-weight: 500; margin-bottom: 28px; }
+        
+        /* BOUTONS ACTIONS DES CARTES */
+        .btn-upgrade { 
+            background: var(--primary-terracotta); color: white; border: none; width: 100%; 
+            padding: 14px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; 
+            cursor: pointer; transition: var(--transition-fluid); font-family: inherit;
+            box-shadow: 0 8px 20px rgba(201, 122, 99, 0.15);
+        }
+        .btn-upgrade:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 12px 25px rgba(201, 122, 99, 0.25); }
+        
+        /* État désactivé pour le pack déjà actif */
+        .price-card.active .btn-upgrade {
+            background: rgba(141, 161, 145, 0.12); color: var(--secondary-sage);
+            box-shadow: none; cursor: not-allowed;
+        }
+        .price-card.active .btn-upgrade:hover { transform: none; background: rgba(141, 161, 145, 0.12); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-brand">🌾 Mon SaaS Photo</div>
+    <div><a href="/dashboard.html">Dashboard</a></div>
+</nav>
+
+<div class="container">
+    <div class="box">
+        <h2>Analyse de la Capacité</h2>
+        <div class="analytique-box">
+            <strong>Forfait Actuel</strong><br>
+            <span id="txtForfait" style="font-family:'Playfair Display', serif; font-size: 20px; font-weight: 600; color: var(--text-dark);">Analyse...</span>
+            <div style="margin-top: 10px;">
+                <strong>Volume Consommé</strong><br>
+                <span id="txtMo" style="font-weight: 600;">0</span> Mo utilisés sur un total de <span id="txtGo" style="font-weight: 600;">15</span> Go.
+            </div>
+        </div>
+        <div class="progress-container">
+            <div id="barreGrosse" class="progress-bar"></div>
+        </div>
+    </div>
+
+    <h2 class="section-title">Augmenter vos capacités</h2>
+    <p style="color: var(--text-light); font-size: 15px;">Faites évoluer votre espace de stockage à tout moment pour accueillir vos futurs lots de photos haute définition.</p>
+    
+    <div class="pricing-grid">
+        <div class="price-card" id="card-Gratuit">
+            <div class="badge-current" id="badge-Gratuit" style="display:none;">Actif</div>
+            <h3>Pack Découverte</h3>
+            <div>
+                <div class="storage-size">15 Go</div>
+                <div class="price">0 € <span style="font-size:12px; font-weight:normal; color:var(--text-light);">/ à vie</span></div>
+            </div>
+            <button class="btn-upgrade" id="btn-Gratuit" disabled>Formule souscrite</button>
+        </div>
+
+        <div class="price-card" id="card-Premium">
+            <div class="badge-current" id="badge-Premium" style="display:none;">Actif</div>
+            <h3>Pack Premium</h3>
+            <div>
+                <div class="storage-size">1 To</div>
+                <div class="price">9,99 € <span style="font-size:12px; font-weight:normal; color:var(--text-light);">/ mois</span></div>
+            </div>
+            <button class="btn-upgrade" id="btn-Premium" onclick="simulerAchat('Premium')">Passer à 1 To</button>
+        </div>
+
+        <div class="price-card" id="card-Pro">
+            <div class="badge-current" id="badge-Pro" style="display:none;">Actif</div>
+            <h3>Pack Studio Pro</h3>
+            <div>
+                <div class="storage-size">5 To</div>
+                <div class="price">29,99 € <span style="font-size:12px; font-weight:normal; color:var(--text-light);">/ mois</span></div>
+            </div>
+            <button class="btn-upgrade" id="btn-Pro" onclick="simulerAchat('Pro')" style="background: var(--text-dark); box-shadow: 0 8px 20px rgba(0,0,0,0.08);">Passer à 5 To</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- PROTECTION ET ROUTAGE SÉCURISÉ ---
+    const token = localStorage.getItem('monBadgePhoto');
+    if (!token) window.location.replace('/index.html');
+
+    // CHARGEMENT SYNCHRONISÉ ET TRAITEMENT DES COMPORTEMENTS DE CARTES
+    window.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetch('/api/albums/stats', { headers: { 'Authorization': `Bearer ${token}` } });
+            const stats = await response.json();
+
+            const limiteEnGo = (stats.stockageLimite / 1024).toFixed(0);
+            document.getElementById('txtMo').innerText = stats.stockageUtilise;
+            document.getElementById('txtGo').innerText = limiteEnGo;
+
+            // Détection logique du forfait basé sur les plafonds de ton infrastructure
+            let nomForfait = "Gratuit";
+            if(stats.stockageLimite > 1024000) nomForfait = "Pro";
+            else if(stats.stockageLimite > 20000) nomForfait = "Premium";
+
+            // Mise à jour de l'étiquette textuelle principale
+            document.getElementById('txtForfait').innerText = `Pack ${nomForfait}`;
+
+            // Manipulation dynamique de la carte active (Bohème-Tech Pattern)
+            const activeCard = document.getElementById(`card-${nomForfait}`);
+            const activeBadge = document.getElementById(`badge-${nomForfait}`);
+            const activeButton = document.getElementById(`btn-${nomForfait}`);
+
+            if (activeCard) activeCard.classList.add('active');
+            if (activeBadge) activeBadge.style.display = 'block';
+            if (activeButton) {
+                activeButton.innerText = "Formule souscrite";
+                activeButton.disabled = true;
+                // Alinement du bouton Pro si c'était celui-ci qui était possédé
+                activeButton.style.background = "rgba(141, 161, 145, 0.12)";
+            }
+
+            // Déclenchement de l'animation de la jauge
+            setTimeout(() => {
+                const pourcentage = Math.min((stats.stockageUtilise / stats.stockageLimite) * 100, 100);
+                document.getElementById('barreGrosse').style.width = `${pourcentage}%`;
+            }, 150);
+
+        } catch (error) { 
+            console.error("Erreur de récupération des métriques d'espace :", error); 
+        }
+    });
+
+    // PASSERELLE DE SIMULATION D'ACHAT STRIPE
+    function simulerAchat(nomPack) {
+        alert(`💳 Connexion sécurisée avec la passerelle Stripe... \n\nPréparation de la mise à niveau vers le Pack ${nomPack}. Votre espace de stockage sera mis à jour dès la validation du paiement.`);
+    }
+</script>
+</body>
+</html>

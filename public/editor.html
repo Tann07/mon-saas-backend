@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Retouche Pro & Darkroom — Creative Suite</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Cropper.js & JSZip -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0D0C0B;
+            --bg-panels: #141312;
+            --bg-workspace: #070706;
+            --panel-card: #1C1A18;
+            --border-pro: rgba(229, 220, 211, 0.08);
+            --primary-terracotta: #C97A63;
+            --primary-hover: #B26550;
+            --secondary-sage: #8DA191;
+            --danger-red: #C96363;
+            --text-light: #F4F1EE;
+            --text-muted: #8E877F;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --transition-smooth: all 0.2s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-light); 
+            height: 100vh; 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 🧭 NAV HEADER */
+        .studio-header { 
+            height: 55px; background: var(--bg-panels); border-bottom: 1px solid var(--border-pro); 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 24px; z-index: 100;
+        }
+        .brand-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; }
+        .brand-badge { 
+            font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; font-weight: 700; 
+            background: var(--primary-terracotta); color: white; padding: 3px 8px; border-radius: 12px; margin-left: 8px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .nav-links a { 
+            color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; margin-left: 20px; transition: var(--transition-smooth);
+        }
+        .nav-links a:hover { color: white; }
+
+        /* 🎛️ WORKSPACE */
+        .main-workspace { display: flex; flex: 1; height: calc(100vh - 55px - 100px); overflow: hidden; }
+
+        /* BARRE D'OUTILS DE GAUCHE */
+        .tools-bar {
+            width: 50px; background: #0A0908; border-right: 1px solid var(--border-pro);
+            display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 12px;
+        }
+        .btn-tool {
+            width: 36px; height: 36px; border-radius: var(--radius-sm); border: 1px solid transparent;
+            background: transparent; color: var(--text-muted); cursor: pointer; font-size: 15px;
+            display: flex; align-items: center; justify-content: center; transition: var(--transition-smooth);
+        }
+        .btn-tool:hover { color: white; background: rgba(255,255,255,0.05); }
+        .btn-tool.active { background: var(--primary-terracotta); color: white; }
+
+        /* PANNEAU LATÉRAL DROIT (REGLAGES) */
+        .pro-sidebar { 
+            width: 380px; background: var(--bg-panels); border-left: 1px solid var(--border-pro); 
+            display: flex; flex-direction: column; overflow-y: auto;
+        }
+        .source-box { padding: 16px; border-bottom: 1px solid var(--border-pro); background: #100F0E; }
+        .select-box { 
+            width: 100%; background: var(--panel-card); border: 1px solid var(--border-pro); color: white; 
+            padding: 10px 14px; border-radius: var(--radius-sm); outline: none; font-family: inherit; font-size: 13px;
+        }
+
+        .tabs-nav { display: flex; border-bottom: 1px solid var(--border-pro); background: #0E0D0C; }
+        .tab-btn { 
+            flex: 1; padding: 12px 2px; background: transparent; border: none; color: var(--text-muted); 
+            font-size: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .tab-btn.active { color: var(--primary-terracotta); border-bottom: 2px solid var(--primary-terracotta); background: var(--bg-panels); }
+
+        .tab-content { padding: 18px; display: none; flex-direction: column; gap: 14px; }
+        .tab-content.active { display: flex; }
+
+        /* SLIDERS */
+        .control-row { display: flex; flex-direction: column; gap: 6px; background: var(--panel-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-pro); }
+        .control-meta { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+        .control-meta span.val { color: var(--text-light); }
+        
+        .slider-wrapper { display: flex; align-items: center; gap: 10px; }
+        input[type="range"] { 
+            flex: 1; -webkit-appearance: none; appearance: none; background: #282522; height: 4px; border-radius: 2px; outline: none; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--primary-terracotta);
+        }
+        .btn-reset { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 11px; }
+        .btn-reset:hover { color: white; }
+
+        /* PRESETS GRILLE */
+        .presets-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .btn-preset { 
+            background: var(--panel-card); border: 1px solid var(--border-pro); color: var(--text-light); 
+            padding: 10px; border-radius: var(--radius-sm); font-size: 11px; cursor: pointer; font-weight: 600; text-align: center;
+        }
+        .btn-preset:hover { border-color: var(--primary-terracotta); color: white; }
+
+        .geo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .btn-geo { background: var(--panel-card); border: 1px solid var(--border-pro); color: white; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 11px; font-weight: 600; }
+        .btn-geo:hover { border-color: var(--primary-terracotta); }
+
+        /* WORKSPACE ZONE CANVAS */
+        .image-bench { flex: 1; background: var(--bg-workspace); display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; overflow: hidden; }
+        .canvas-wrapper { max-width: 100%; max-height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
+        #mainCanvas { max-width: 100%; max-height: 72vh; border-radius: 4px; box-shadow: 0 25px 60px rgba(0,0,0,0.8); }
+        #maskCanvasOverlay { position: absolute; top: 0; left: 0; pointer-events: none; opacity: 0.6; }
+
+        .placeholder-text { font-family: 'Playfair Display', serif; color: var(--text-muted); font-size: 18px; font-style: italic; text-align: center; }
+
+        /* BOUTON AVANT/APRÈS */
+        .btn-compare { 
+            position: absolute; top: 20px; right: 20px; background: rgba(20, 19, 18, 0.85); backdrop-filter: blur(8px);
+            border: 1px solid var(--border-pro); color: var(--text-light); padding: 8px 16px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; cursor: pointer; user-select: none; z-index: 10;
+        }
+        .btn-compare:active { background: var(--primary-terracotta); }
+
+        /* PELLICULE INFÉRIEURE */
+        .filmstrip { 
+            height: 100px; background: var(--bg-panels); border-top: 1px solid var(--border-pro); 
+            display: flex; align-items: center; padding: 0 20px; gap: 12px; overflow-x: auto;
+        }
+        .filmstrip-thumb { 
+            height: 68px; aspect-ratio: 3/2; object-fit: cover; border-radius: 4px; cursor: pointer; 
+            opacity: 0.35; border: 2px solid transparent; transition: var(--transition-smooth);
+        }
+        .filmstrip-thumb:hover { opacity: 0.8; }
+        .filmstrip-thumb.active { opacity: 1; border-color: var(--primary-terracotta); }
+
+        /* FOOTER ACTIONS */
+        .sidebar-footer { padding: 16px; border-top: 1px solid var(--border-pro); margin-top: auto; background: #0E0D0C; display: flex; flex-direction: column; gap: 8px; }
+        .btn-pro-action { width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; transition: var(--transition-smooth); }
+        .btn-save-next { background: var(--secondary-sage); color: white; }
+        .btn-save-next:hover { background: #7A8E7E; }
+        .btn-delete-real { background: rgba(201, 99, 99, 0.15); color: var(--danger-red); border: 1px solid var(--danger-red); }
+        .btn-delete-real:hover { background: var(--danger-red); color: white; }
+        .btn-zip-download { background: var(--primary-terracotta); color: white; }
+        .btn-zip-download:hover { background: var(--primary-hover); }
+    </style>
+</head>
+<body>
+
+<div class="studio-header">
+    <div class="brand-title">🌾 Mon SaaS Photo <span class="brand-badge">Studio Complete Edition</span></div>
+    <div class="nav-links">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/my-albums.html">Mes Albums</a>
+    </div>
+</div>
+
+<div class="main-workspace">
+    <!-- BARRE OUTILS GAUCHE -->
+    <div class="tools-bar">
+        <button class="btn-tool active" id="toolSelect" title="Sélection Globale">✋</button>
+        <button class="btn-tool" id="toolBrush" title="Pinceau de Retouche Local">🖌️</button>
+    </div>
+
+    <!-- ZONE CENTRALE (CANVAS + AVANT/APRÈS) -->
+    <div class="image-bench">
+        <button class="btn-compare" id="btnCompare">👁️ Maintenir pour comparer (Espace)</button>
+        <div class="canvas-wrapper">
+            <div class="placeholder-text" id="placeholder">Sélectionnez une collection pour ouvrir le studio.</div>
+            <canvas id="mainCanvas"></canvas>
+            <canvas id="maskCanvasOverlay"></canvas>
+        </div>
+    </div>
+
+    <!-- PANNEAU DROIT (REGLAGES) -->
+    <div class="pro-sidebar">
+        <div class="source-box">
+            <label style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 6px;">1. Album Source</label>
+            <select id="albumSelector" class="select-box">
+                <option value="">-- Sélectionner un Album --</option>
+            </select>
+        </div>
+
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('light')">Lumière</button>
+            <button class="tab-btn" onclick="switchTab('color')">Couleur</button>
+            <button class="tab-btn" onclick="switchTab('effects')">Effets</button>
+            <button class="tab-btn" onclick="switchTab('presets')">Styles</button>
+            <button class="tab-btn" onclick="switchTab('geo')">Cadrage</button>
+        </div>
+
+        <!-- LUMIÈRE -->
+        <div class="tab-content active" id="tab-light">
+            <div class="control-row">
+                <div class="control-meta"><span>Exposition</span><span class="val" id="val-brightness">100%</span></div>
+                <div class="slider-wrapper"><input type="range" id="brightness" min="0" max="200" value="100"><button class="btn-reset" onclick="resetParam('brightness', 100)">⟲</button></div>
+            </div>
+            <div class="control-row">
+                <div class="control-meta"><span>Contraste</span><span class="val" id="val-contrast">100%</span></div>
+                <div class="slider-wrapper"><input type="range" id="contrast" min="0" max="200" value="100"><button class="btn-reset" onclick="resetParam('contrast', 100)">⟲</button></div>
+            </div>
+            <div class="control-row">
+                <div class="control-meta"><span>Ombres HDR</span><span class="val" id="val-shadows">0</span></div>
+                <div class="slider-wrapper"><input type="range" id="shadows" min="-50" max="50" value="0"><button class="btn-reset" onclick="resetParam('shadows', 0)">⟲</button></div>
+            </div>
+        </div>
+
+        <!-- COULEUR -->
+        <div class="tab-content" id="tab-color">
+            <div class="control-row">
+                <div class="control-meta"><span>Température (WB)</span><span class="val" id="val-temperature">0</span></div>
+                <div class="slider-wrapper"><input type="range" id="temperature" min="-50" max="50" value="0"><button class="btn-reset" onclick="resetParam('temperature', 0)">⟲</button></div>
+            </div>
+            <div class="control-row">
+                <div class="control-meta"><span>Saturation</span><span class="val" id="val-saturate">100%</span></div>
+                <div class="slider-wrapper"><input type="range" id="saturate" min="0" max="200" value="100"><button class="btn-reset" onclick="resetParam('saturate', 100)">⟲</button></div>
+            </div>
+            <div class="control-row">
+                <div class="control-meta"><span>Virage de Teinte</span><span class="val" id="val-hue">0°</span></div>
+                <div class="slider-wrapper"><input type="range" id="hue" min="0" max="360" value="0"><button class="btn-reset" onclick="resetParam('hue', 0)">⟲</button></div>
+            </div>
+        </div>
+
+        <!-- EFFETS -->
+        <div class="tab-content" id="tab-effects">
+            <div class="control-row">
+                <div class="control-meta"><span>Grain Argentique</span><span class="val" id="val-grain">0</span></div>
+                <div class="slider-wrapper"><input type="range" id="grain" min="0" max="50" value="0"><button class="btn-reset" onclick="resetParam('grain', 0)">⟲</button></div>
+            </div>
+            <div class="control-row">
+                <div class="control-meta"><span>Vignettage</span><span class="val" id="val-vignette">0%</span></div>
+                <div class="slider-wrapper"><input type="range" id="vignette" min="0" max="100" value="0"><button class="btn-reset" onclick="resetParam('vignette', 0)">⟲</button></div>
+            </div>
+            <div class="control-row">
+                <div class="control-meta"><span>Flou Bokeh</span><span class="val" id="val-blur">0px</span></div>
+                <div class="slider-wrapper"><input type="range" id="blur" min="0" max="15" value="0"><button class="btn-reset" onclick="resetParam('blur', 0)">⟲</button></div>
+            </div>
+        </div>
+
+        <!-- STYLES -->
+        <div class="tab-content" id="tab-presets">
+            <div class="presets-grid">
+                <button class="btn-preset" onclick="appliquerPreset('normal')">📷 Normal</button>
+                <button class="btn-preset" onclick="appliquerPreset('boho')">🌾 Boho Warm</button>
+                <button class="btn-preset" onclick="appliquerPreset('nb')">🖤 N&B Pro</button>
+                <button class="btn-preset" onclick="appliquerPreset('cinema')">🎬 Cinéma</button>
+                <button class="btn-preset" onclick="appliquerPreset('vintage')">🎞️ Vintage</button>
+            </div>
+        </div>
+
+        <!-- CADRAGE -->
+        <div class="tab-content" id="tab-geo">
+            <div class="control-row">
+                <label style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Ajustement Géométrique</label>
+                <div class="geo-grid">
+                    <button class="btn-geo" onclick="rotateImage(90)">🔄 +90°</button>
+                    <button class="btn-geo" onclick="rotateImage(-90)">🔄 -90°</button>
+                    <button class="btn-geo" onclick="flipImage('X')">↔️ Miroir H</button>
+                    <button class="btn-geo" onclick="flipImage('Y')">↕️ Miroir V</button>
+                </div>
+            </div>
+            <button class="btn-pro-action" style="background:#23211F; color:white; font-size:11px;" id="btnToggleCrop">📐 Lancer le Recadrage Manuel</button>
+        </div>
+
+        <!-- BOUTONS ACTIONS -->
+        <div class="sidebar-footer">
+            <button class="btn-pro-action btn-save-next" id="btnSaveNext">💾 Enregistrer & Photo Suivante ➔</button>
+            <button class="btn-pro-action btn-delete-real" id="btnDeletePhoto">🗑️ Supprimer cette photo définitivement</button>
+            <button class="btn-pro-action btn-zip-download" id="btnDownloadZip">📥 Télécharger l'Album complet (.ZIP)</button>
+        </div>
+    </div>
+</div>
+
+<div class="filmstrip" id="filmstripContainer"></div>
+
+<script>
+    const token = localStorage.getItem('monBadgePhoto');
+    if (!token) window.location.replace('/index.html');
+
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    const maskCanvas = document.getElementById('maskCanvasOverlay');
+    const maskCtx = maskCanvas.getContext('2d');
+
+    let originalImage = new Image();
+    let listePhotos = [];
+    let currentIndex = 0;
+    let isDrawing = false;
+    let modePinceau = false;
+    let cropperInstance = null;
+    let imageCropper = null;
+
+    let banqueFiltres = {};
+    const structureDefaut = { brightness: 100, contrast: 100, shadows: 0, temperature: 0, saturate: 100, hue: 0, grain: 0, vignette: 0, blur: 0, rotation: 0, flipX: 1, flipY: 1 };
+
+    // Chargement initial des albums
+    window.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const res = await fetch('/api/albums/my-albums', { headers: { 'Authorization': `Bearer ${token}` } });
+            const albums = await res.json();
+            const selector = document.getElementById('albumSelector');
+
+            albums.forEach(album => {
+                const opt = document.createElement('option');
+                opt.value = album._id;
+                opt.innerText = album.titre;
+                selector.appendChild(opt);
+            });
+        } catch (err) { console.error(err); }
+    });
+
+    // Chargement de l'album sélectionné
+    document.getElementById('albumSelector').addEventListener('change', async (e) => {
+        const albumId = e.target.value;
+        if (!albumId) return;
+
+        try {
+            const res = await fetch(`/api/photos/album/${albumId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            listePhotos = await res.json();
+
+            if (listePhotos.length === 0) {
+                document.getElementById('placeholder').innerText = "Cet album est vide.";
+                document.getElementById('filmstripContainer').innerHTML = '';
+                return;
+            }
+
+            banqueFiltres = {};
+            listePhotos.forEach(p => banqueFiltres[p._id] = JSON.parse(JSON.stringify(structureDefaut)));
+
+            actualiserFilmstrip();
+            chargerPhoto(0);
+        } catch (err) { console.error(err); }
+    });
+
+    function actualiserFilmstrip() {
+        const container = document.getElementById('filmstripContainer');
+        container.innerHTML = '';
+        listePhotos.forEach((photo, idx) => {
+            const img = document.createElement('img');
+            img.src = photo.urlImage;
+            img.className = 'filmstrip-thumb' + (idx === currentIndex ? ' active' : '');
+            img.addEventListener('click', () => chargerPhoto(idx));
+            container.appendChild(img);
+        });
+    }
+
+    function chargerPhoto(idx) {
+        if (listePhotos.length === 0) return;
+        detruireCropper();
+        currentIndex = idx;
+        actualiserFilmstrip();
+
+        document.getElementById('placeholder').style.display = 'none';
+
+        const photo = listePhotos[currentIndex];
+        originalImage = new Image();
+        originalImage.crossOrigin = "anonymous";
+        originalImage.src = photo.urlImage;
+        originalImage.onload = () => {
+            canvas.width = originalImage.naturalWidth;
+            canvas.height = originalImage.naturalHeight;
+            maskCanvas.width = canvas.width;
+            maskCanvas.height = canvas.height;
+            effacerMasque();
+
+            // Mettre à jour les sliders
+            const f = banqueFiltres[photo._id];
+            Object.keys(f).forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.value = f[id];
+                    if (document.getElementById(`val-${id}`)) {
+                        const suffixe = id === 'blur' ? 'px' : (id === 'hue' ? '°' : (['shadows', 'temperature', 'grain'].includes(id) ? '' : '%'));
+                        document.getElementById(`val-${id}`).innerText = f[id] + suffixe;
+                    }
+                }
+            });
+
+            rendrePipeline();
+        };
+    }
+
+    // RENDU ENGINE CANVAS
+    function rendrePipeline(forceOriginal = false) {
+        if (!originalImage.complete) return;
+        const pId = listePhotos[currentIndex]._id;
+        const f = forceOriginal ? structureDefaut : banqueFiltres[pId];
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((f.rotation * Math.PI) / 180);
+        ctx.scale(f.flipX, f.flipY);
+        ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+        let balanceTeinte = `hue-rotate(${f.hue}deg)`;
+        if (f.temperature !== 0) balanceTeinte = `hue-rotate(${f.hue + (f.temperature * 0.25)}deg)`;
+
+        ctx.filter = `brightness(${f.brightness}%) contrast(${f.contrast}%) saturate(${f.saturate}%) blur(${f.blur}px) ${balanceTeinte}`;
+        ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+        ctx.filter = 'none';
+
+        if (!forceOriginal && (f.shadows !== 0 || f.grain > 0 || f.vignette > 0)) {
+            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let data = imgData.data;
+            let w = canvas.width; let h = canvas.height;
+            let centerX = w / 2; let centerY = h / 2;
+            let maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+
+            for (let i = 0; i < data.length; i += 4) {
+                if (f.shadows !== 0) {
+                    let luminance = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                    if (luminance < 110) {
+                        let facteur = ((110 - luminance) / 110) * (f.shadows * 0.4);
+                        data[i] += facteur; data[i+1] += facteur; data[i+2] += facteur;
+                    }
+                }
+                if (f.grain > 0) {
+                    let bruit = (Math.random() - 0.5) * f.grain;
+                    data[i] += bruit; data[i+1] += bruit; data[i+2] += bruit;
+                }
+            }
+
+            if (f.vignette > 0) {
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        let idx = (y * w + x) * 4;
+                        let dist = Math.sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
+                        let ratio = dist / maxDist;
+                        let facteurOmbre = 1 - (ratio * (f.vignette / 100));
+                        data[idx] *= facteurOmbre; data[idx+1] *= facteurOmbre; data[idx+2] *= facteurOmbre;
+                    }
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+    }
+
+    // BOUTON & CLAVIER AVANT / APRÈS
+    const btnCompare = document.getElementById('btnCompare');
+    btnCompare.addEventListener('mousedown', () => rendrePipeline(true));
+    btnCompare.addEventListener('mouseup', () => rendrePipeline(false));
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+            e.preventDefault();
+            rendrePipeline(true);
+        }
+    });
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+            rendrePipeline(false);
+        }
+    });
+
+    // ÉCOUTEURS DES SLIDERS
+    Object.keys(structureDefaut).forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.addEventListener('input', (e) => {
+            const pId = listePhotos[currentIndex]._id;
+            banqueFiltres[pId][id] = parseFloat(e.target.value);
+
+            const suffixe = id === 'blur' ? 'px' : (id === 'hue' ? '°' : (['shadows', 'temperature', 'grain'].includes(id) ? '' : '%'));
+            if (document.getElementById(`val-${id}`)) document.getElementById(`val-${id}`).innerText = e.target.value + suffixe;
+
+            rendrePipeline();
+        });
+    });
+
+    function resetParam(id, defaultVal) {
+        const pId = listePhotos[currentIndex]._id;
+        banqueFiltres[pId][id] = defaultVal;
+        const input = document.getElementById(id);
+        if (input) input.value = defaultVal;
+
+        const suffixe = id === 'blur' ? 'px' : (id === 'hue' ? '°' : (['shadows', 'temperature', 'grain'].includes(id) ? '' : '%'));
+        if (document.getElementById(`val-${id}`)) document.getElementById(`val-${id}`).innerText = defaultVal + suffixe;
+
+        rendrePipeline();
+    }
+
+    // PRESETS
+    function appliquerPreset(nom) {
+        const pId = listePhotos[currentIndex]._id;
+        const f = banqueFiltres[pId];
+
+        if (nom === 'normal') Object.assign(f, structureDefaut);
+        else if (nom === 'boho') Object.assign(f, { brightness: 105, contrast: 95, temperature: 15, saturate: 110, vignette: 15, grain: 10 });
+        else if (nom === 'nb') Object.assign(f, { brightness: 100, contrast: 125, saturate: 0, shadows: 10, grain: 15 });
+        else if (nom === 'cinema') Object.assign(f, { brightness: 95, contrast: 130, saturate: 85, hue: 10, vignette: 25 });
+        else if (nom === 'vintage') Object.assign(f, { brightness: 90, contrast: 110, saturate: 120, temperature: 25, grain: 25 });
+
+        Object.keys(f).forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.value = f[id];
+                const suffixe = id === 'blur' ? 'px' : (id === 'hue' ? '°' : (['shadows', 'temperature', 'grain'].includes(id) ? '' : '%'));
+                if (document.getElementById(`val-${id}`)) document.getElementById(`val-${id}`).innerText = f[id] + suffixe;
+            }
+        });
+        rendrePipeline();
+    }
+
+    // GÉOMÉTRIE & RECADRAGE
+    function rotateImage(deg) {
+        const pId = listePhotos[currentIndex]._id;
+        banqueFiltres[pId].rotation = (banqueFiltres[pId].rotation + deg) % 360;
+        rendrePipeline();
+    }
+    function flipImage(axe) {
+        const pId = listePhotos[currentIndex]._id;
+        if (axe === 'X') banqueFiltres[pId].flipX *= -1;
+        if (axe === 'Y') banqueFiltres[pId].flipY *= -1;
+        rendrePipeline();
+    }
+
+    document.getElementById('btnToggleCrop').onclick = () => {
+        if (cropperInstance) {
+            const canvasCropped = cropperInstance.getCroppedCanvas();
+            originalImage = new Image();
+            originalImage.crossOrigin = "anonymous";
+            originalImage.src = canvasCropped.toDataURL('image/jpeg', 0.95);
+            originalImage.onload = () => {
+                canvas.width = originalImage.naturalWidth;
+                canvas.height = originalImage.naturalHeight;
+                detruireCropper();
+                rendrePipeline();
+            };
+        } else {
+            imageCropper = document.createElement('img');
+            imageCropper.src = canvas.toDataURL();
+            imageCropper.style.maxWidth = '100%';
+            imageCropper.style.maxHeight = '72vh';
+
+            canvas.style.display = 'none';
+            document.querySelector('.canvas-wrapper').appendChild(imageCropper);
+
+            cropperInstance = new Cropper(imageCropper, { viewMode: 1, background: false, autoCropArea: 1 });
+            document.getElementById('btnToggleCrop').innerText = "✔️ Valider le recadrage";
+            document.getElementById('btnToggleCrop').style.background = "var(--primary-terracotta)";
+        }
+    };
+
+    function detruireCropper() {
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+            if (imageCropper) imageCropper.remove();
+            canvas.style.display = 'block';
+            document.getElementById('btnToggleCrop').innerText = "📐 Lancer le Recadrage Manuel";
+            document.getElementById('btnToggleCrop').style.background = "#23211F";
+        }
+    }
+
+    // GESTION DU MASK PINCEAU
+    document.getElementById('toolBrush').onclick = () => {
+        modePinceau = true;
+        document.getElementById('toolBrush').classList.add('active');
+        document.getElementById('toolSelect').classList.remove('active');
+        maskCanvas.style.pointerEvents = 'auto';
+    };
+    document.getElementById('toolSelect').onclick = () => {
+        modePinceau = false;
+        document.getElementById('toolSelect').classList.add('active');
+        document.getElementById('toolBrush').classList.remove('active');
+        maskCanvas.style.pointerEvents = 'none';
+    };
+
+    maskCanvas.addEventListener('mousedown', () => isDrawing = true);
+    maskCanvas.addEventListener('mouseup', () => isDrawing = false);
+    maskCanvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing || !modePinceau) return;
+        const rect = maskCanvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (maskCanvas.width / rect.width);
+        const y = (e.clientY - rect.top) * (maskCanvas.height / rect.height);
+
+        maskCtx.fillStyle = 'rgba(201, 122, 99, 0.6)';
+        maskCtx.beginPath();
+        maskCtx.arc(x, y, 25, 0, Math.PI * 2);
+        maskCtx.fill();
+    });
+
+    function effacerMasque() { maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height); }
+
+    // ONGLETS
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes(tabId)));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tabId}`));
+    }
+
+    // 💾 ENREGISTRER & PHOTO SUIVANTE
+    document.getElementById('btnSaveNext').onclick = async () => {
+        const btn = document.getElementById('btnSaveNext');
+        btn.innerText = "⏳ Enregistrement Cloud...";
+
+        const photo = listePhotos[currentIndex];
+        const base64Data = canvas.toDataURL('image/jpeg', 0.95);
+
+        try {
+            await fetch(`/api/photos/${photo._id}/edit-replace`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ imageBase64: base64Data })
+            });
+
+            if (currentIndex < listePhotos.length - 1) {
+                chargerPhoto(currentIndex + 1);
+            } else {
+                alert("✨ Toutes les photos de cet album ont été retouchées et sauvegardées avec succès !");
+            }
+        } catch (e) { alert("Erreur lors de la sauvegarde."); }
+
+        btn.innerText = "💾 Enregistrer & Photo Suivante ➔";
+    };
+
+    // 🗑️ VRAIE SUPPRESSION DÉFINITIVE D'UNE PHOTO (BASE DE DONNÉES & DISQUE)
+    document.getElementById('btnDeletePhoto').onclick = async () => {
+        const photo = listePhotos[currentIndex];
+        if (!confirm(`Voulez-vous supprimer définitivement la photo "${photo.titre || 'sélectionnée'}" du serveur ?`)) return;
+
+        const btn = document.getElementById('btnDeletePhoto');
+        btn.innerText = "⏳ Suppression...";
+
+        try {
+            const res = await fetch(`/api/photos/${photo._id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                listePhotos.splice(currentIndex, 1);
+                if (listePhotos.length > 0) {
+                    const nextIndex = currentIndex >= listePhotos.length ? listePhotos.length - 1 : currentIndex;
+                    chargerPhoto(nextIndex);
+                } else {
+                    document.getElementById('placeholder').innerText = "Toutes les photos ont été supprimées.";
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    document.getElementById('filmstripContainer').innerHTML = '';
+                }
+                alert("🗑️ Photo supprimée du serveur avec succès.");
+            } else {
+                alert("Échec de la suppression.");
+            }
+        } catch (e) { alert("Erreur réseau lors de la suppression."); }
+
+        btn.innerText = "🗑️ Supprimer cette photo définitivement";
+    };
+
+    // 📥 TÉLÉCHARGEMENT COMPLET .ZIP
+    document.getElementById('btnDownloadZip').onclick = async () => {
+        const btn = document.getElementById('btnDownloadZip');
+        btn.innerText = "⏳ Préparation du ZIP...";
+
+        const zip = new JSZip();
+        for (let i = 0; i < listePhotos.length; i++) {
+            const photo = listePhotos[i];
+            const response = await fetch(photo.urlImage);
+            const blob = await response.blob();
+            zip.file(`Studio_Photo_${i + 1}.jpg`, blob);
+        }
+
+        zip.generateAsync({ type: "blob" }).then((content) => {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(content);
+            a.download = `Shooting_Retouche_${Date.now()}.zip`;
+            a.click();
+            btn.innerText = "📥 Télécharger l'Album complet (.ZIP)";
+        });
+    };
+</script>
+</body>
+</html>

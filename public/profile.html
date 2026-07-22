@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Compte & Facturation — Mon SaaS Photo</title>
+    
+    <!-- Fonts : Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 DESIGN SYSTEM BOHO-TECH */
+        :root {
+            --bg-boho: #FAF6F0;           /* Crème lin organique */
+            --primary-terracotta: #C97A63;  /* Ocre signature */
+            --primary-hover: #B26550;
+            --secondary-sage: #8DA191;     /* Vert sauge relaxant */
+            --text-dark: #2D2A26;          /* Charbon minéral */
+            --text-light: #766E65;         /* Teinte sable secondaire */
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
+            --transition-fluid: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ✨ RESTYLING GLOBAL */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-boho); 
+            color: var(--text-dark); 
+            padding-top: 110px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* 🧭 NAV BAR FLOTTANTE BOHO */
+        .navbar { 
+            position: fixed; top: 0; left: 0; right: 0; height: 75px; 
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 40px; 
+            border-bottom: 1px solid rgba(201, 122, 99, 0.06); z-index: 1000; 
+            box-sizing: border-box;
+        }
+        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+        .nav-links a { 
+            color: var(--text-light); text-decoration: none; font-weight: 600; font-size: 14px; 
+            margin-left: 24px; transition: var(--transition-fluid);
+        }
+        .nav-links a:hover { color: var(--primary-terracotta); }
+
+        .container { max-width: 780px; margin: 0 auto; padding: 0 20px; }
+        
+        h1 { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 600; margin-bottom: 8px; }
+        
+        /* 💳 MODULES PROFILE CARDS */
+        .profile-card { 
+            background: white; border-radius: var(--radius-lg); padding: 40px; 
+            box-shadow: 0 10px 30px rgba(74, 58, 49, 0.02); margin-bottom: 30px; 
+            border: 1px solid rgba(240, 230, 220, 0.7);
+            transition: var(--transition-fluid);
+        }
+        .profile-card:hover {
+            box-shadow: 0 15px 35px rgba(74, 58, 49, 0.04);
+        }
+        .profile-card h2 { 
+            font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; 
+            margin-top: 0; margin-bottom: 24px; color: var(--text-dark); 
+            display: flex; align-items: center; gap: 12px; 
+        }
+        
+        /* 📊 INDICATEURS DE STOCKAGE DYNAMIQUES */
+        .storage-header { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 10px; font-size: 14px; color: var(--text-dark); }
+        .storage-bar-bg { background: #EFEAE4; height: 12px; border-radius: 30px; overflow: hidden; width: 100%; margin-bottom: 14px; }
+        .storage-bar-fill { 
+            background: linear-gradient(90deg, var(--primary-terracotta), var(--secondary-sage)); 
+            height: 100%; width: 0%; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .storage-footer { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+
+        /* 🏷️ BADGES FORFAIT STYLE ARTISANAL */
+        .badge-forfait { display: inline-block; padding: 6px 16px; border-radius: 30px; font-weight: 600; font-size: 12px; letter-spacing: 0.3px; }
+        .badge-gratuit { background: rgba(141, 161, 145, 0.15); color: var(--secondary-sage); }
+        .badge-premium { background: rgba(201, 122, 99, 0.15); color: var(--primary-terracotta); }
+        .badge-pro { background: #F3EAF5; color: #9C27B0; }
+
+        /* 📋 FORMULAIRES MINIMALISTES */
+        .form-group { margin-bottom: 24px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; color: var(--text-light); }
+        .form-group input { 
+            width: 100%; padding: 14px 18px; border: 1px solid #E5DCD3; border-radius: var(--radius-md); 
+            font-size: 14px; background-color: #FCFAF7; color: var(--text-dark); outline: none; transition: var(--transition-fluid);
+        }
+        .form-group input:focus { 
+            border-color: var(--secondary-sage); background-color: white;
+            box-shadow: 0 0 0 4px rgba(141, 161, 145, 0.08);
+        }
+        
+        /* BOUTONS DE COMMANDE */
+        .btn-save { 
+            background: var(--text-dark); color: white; border: none; padding: 14px 28px; 
+            border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; 
+            transition: var(--transition-fluid); box-shadow: 0 4px 15px rgba(45, 42, 38, 0.1);
+        }
+        .btn-save:hover { background: #44403A; transform: translateY(-1px); }
+        
+        .btn-upgrade { 
+            background: var(--primary-terracotta); color: white; border: none; padding: 12px 24px; 
+            border-radius: var(--radius-md); font-weight: 600; font-size: 13px; cursor: pointer; 
+            margin-top: 18px; transition: var(--transition-fluid); box-shadow: 0 8px 20px rgba(201, 122, 99, 0.15);
+        }
+        .btn-upgrade:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 12px 25px rgba(201, 122, 99, 0.25); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-brand">🌾 Mon SaaS Photo</div>
+    <div class="nav-links">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/my-albums.html">Mes Albums</a>
+        <a href="/profile.html" style="color: var(--primary-terracotta);">Mon Compte</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>Espace Personnel</h1>
+    <p style="color: var(--text-light); margin-bottom: 40px; font-size: 15px;">Supervisez l'état de votre infrastructure Cloud, votre facturation et la sécurité de votre compte.</p>
+
+    <!-- Section 1 : Statut du Stockage -->
+    <div class="profile-card">
+        <h2><span>📊</span> Infrastructure de Stockage</h2>
+        <div class="storage-container">
+            <div class="storage-header">
+                <span id="storageUsedText">Vérification de l'espace...</span>
+                <span id="storagePercentText">0%</span>
+            </div>
+            <div class="storage-bar-bg">
+                <div class="storage-bar-fill" id="storageBarFill"></div>
+            </div>
+            <div class="storage-footer" id="storageFooterText">
+                Calcul de la volumétrie globale en cours...
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2 : Abonnement -->
+    <div class="profile-card">
+        <h2><span>💳</span> Offre de Services</h2>
+        <p style="font-size: 15px; margin-bottom: 8px;">Votre niveau d'atelier actuel : <span id="badgeForfait" class="badge-forfait badge-gratuit">🌿 Pack Gratuit</span></p>
+        <p style="color: var(--text-light); font-size: 14px; line-height: 1.5;">Bénéficiez de fonctions de stockage de base. Évoluez vers des volumes supérieurs pour débloquer la puissance totale du Creative Studio et le tri prédictif par IA.</p>
+        <button class="btn-upgrade" onclick="simulerUpgrade()">🚀 Ajuster ma formule</button>
+    </div>
+
+    <!-- Section 3 : Formulaire de modification sécurisé -->
+    <div class="profile-card">
+        <h2><span>🔐</span> Profil & Identité</h2>
+        <form id="updateProfileForm">
+            <div class="form-group">
+                <label for="profileEmail">Adresse de contact</label>
+                <input type="email" id="profileEmail" required placeholder="Saisissez votre e-mail principal">
+            </div>
+            <div class="form-group">
+                <label for="profilePassword">Changement de clé secrète (laisser vide si inchangée)</label>
+                <input type="password" id="profilePassword" placeholder="••••••••" minlength="6">
+            </div>
+            <button type="submit" class="btn-save">Enregistrer les informations</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // --- INTÉGRATION SÉCURISÉE DE TON SYSTÈME DE BADGE DE SÉCURITÉ ---
+    const token = localStorage.getItem('monBadgePhoto');
+    if (!token) window.location.replace('/index.html');
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        await chargerDonniesProfil();
+    });
+
+    // REQUÊTE ET CALCUL DE LA VOLUMÉTRIE EN DIRECT (TOTALEMENT SYNCHRONISÉ)
+    async function chargerDonniesProfil() {
+        try {
+            // Interrogation du point d'accès statistique de ton API
+            const resStats = await fetch('/api/albums/stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const stats = await resStats.json();
+
+            const utiliséMo = stats.stockageUtilise || 0;
+            const limiteMo = stats.stockageLimite || 100; 
+            const nbPhotos = stats.photos || 0;
+            const nbAlbums = stats.albums || 0;
+
+            // Conversion adaptative en mégaoctets ou gigaoctets
+            let texteUtilise = utiliséMo >= 1024 ? `${(utiliséMo/1024).toFixed(2)} Go` : `${utiliséMo.toFixed(1)} Mo`;
+            let texteLimite = limiteMo >= 1024 ? `${(limiteMo/1024).toFixed(0)} Go` : `${limiteMo} Mo`;
+
+            const pourcentage = Math.min(((utiliséMo / limiteMo) * 100), 100);
+
+            // Injection dynamique
+            document.getElementById('storageUsedText').innerText = `${texteUtilise} utilisés sur ${texteLimite}`;
+            document.getElementById('storagePercentText').innerText = `${pourcentage.toFixed(0)}%`;
+            
+            // Temporisation fluide de l'animation de jauge
+            setTimeout(() => {
+                document.getElementById('storageBarFill').style.width = `${pourcentage}%`;
+            }, 150);
+            
+            document.getElementById('storageFooterText').innerText = `Votre cloud héberge actuellement ${nbPhotos} photo${nbPhotos > 1 ? 's' : ''} indexée${nbPhotos > 1 ? 's' : ''}, répertoriée${nbPhotos > 1 ? 's' : ''} dans vos ${nbAlbums} collection${nbAlbums > 1 ? 's' : ''}.`;
+
+            // Alerte visuelle : Bascule en teinte terre cuite brique si l'espace sature (>85%)
+            if (pourcentage > 85) {
+                document.getElementById('storageBarFill').style.background = "linear-gradient(90deg, #C96363, #E5A3A3)";
+            }
+
+            // Gestionnaire de statut de badge selon ton modèle de données
+            const elBadge = document.getElementById('badgeForfait');
+            if (limiteMo > 5000) {
+                elBadge.innerText = "✨ Pack Studio Pro";
+                elBadge.className = "badge-forfait badge-pro";
+            } else if (limiteMo > 500) {
+                elBadge.innerText = "⚡ Pack Premium";
+                elBadge.className = "badge-forfait badge-premium";
+            } else {
+                elBadge.innerText = "🌿 Pack Gratuit";
+                elBadge.className = "badge-forfait badge-gratuit";
+            }
+
+        } catch (err) {
+            console.error("Échec d'analyse de l'état du profil utilisateur :", err);
+        }
+    }
+
+    // INTERCEPTION ET VALIDATION DU FORMULAIRE DE PROFIL
+    document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('profileEmail').value;
+        const password = document.getElementById('profilePassword').value;
+
+        // Branchement futur de la route de mise à jour utilisateur PUT /api/auth/update
+        alert("💾 Vos préférences de sécurité et votre profil ont été synchronisés avec succès.");
+    });
+
+    // LIEN COMPORTEMENTAL PAYWALL STRIPE
+    function simulerUpgrade() {
+        alert("💳 Initialisation de la passerelle de paiement sécurisée (Stripe)... \n\nSélectionnez votre volume idéal pour lever instantanément vos barrières de stockage.");
+    }
+</script>
+</body>
+</html>

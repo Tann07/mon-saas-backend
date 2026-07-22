@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion — Mon SaaS Photo</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 DESIGN SYSTEM BOHO-TECH */
+        :root {
+            --bg-boho: #FAF6F0;           /* Crème lin doux */
+            --primary-terracotta: #C97A63;  /* Ocre / Terre cuite */
+            --primary-hover: #B26550;
+            --secondary-sage: #8DA191;     /* Vert sauge */
+            --text-dark: #2D2A26;          /* Charbon minéral */
+            --text-light: #766E65;         /* Sable chaud */
+            --radius-lg: 24px;
+            --radius-md: 14px;
+            --transition-fluid: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ✨ RESET & FULLSCREEN SPLIT */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-boho); 
+            color: var(--text-dark); 
+            min-height: 100vh;
+            display: flex;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 🖼️ SPLIT LAYOUT : PANNEAU VISUEL GAUCHE (DA EDITORIALE) */
+        .login-visual-panel {
+            flex: 1.2;
+            background: linear-gradient(135deg, #FAF6F0 0%, #EFEAE4 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content:间;
+            justify-content: space-between;
+            padding: 60px;
+            overflow: hidden;
+            border-right: 1px solid rgba(201, 122, 99, 0.06);
+        }
+        /* Décoration organique discrète simulant une pellicule ou un reflet de lentille */
+        .login-visual-panel::before {
+            content: ''; position: absolute; bottom: -10%; left: -10%; width: 500px; height: 500px;
+            border-radius: 50%; background: radial-gradient(circle, rgba(201,122,99,0.05) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+        .brand-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .visual-statement {
+            max-width: 480px;
+            margin: auto 0;
+            z-index: 2;
+        }
+        .visual-statement h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 46px;
+            font-weight: 500;
+            line-height: 1.2;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+        }
+        .visual-statement p {
+            color: var(--text-light);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .visual-footer {
+            font-size: 12px;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        /* 🔐 SPLIT LAYOUT : FORMULAIRE DROITE (TECH MINIMALISTE) */
+        .login-form-panel {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background-color: white;
+        }
+        .login-container { 
+            width: 100%; 
+            max-width: 380px; 
+            animation: formAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        h2 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            margin-bottom: 8px; 
+            color: var(--text-dark); 
+            font-weight: 600;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 32px;
+        }
+
+        /* CHAMPS DE SAISIE MINIMALISTES */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        input { 
+            width: 100%; 
+            padding: 16px 18px; 
+            border: 1px solid #E5DCD3; 
+            border-radius: var(--radius-md); 
+            font-family: inherit;
+            font-size: 14px;
+            background-color: #FCFAF7;
+            color: var(--text-dark);
+            transition: var(--transition-fluid);
+            outline: none;
+        }
+        input:focus { 
+            border-color: var(--primary-terracotta); 
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(201, 122, 99, 0.08);
+        }
+
+        /* BOUTON D'ACCÈS INTÉLLIGENT */
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background-color: var(--primary-terracotta); 
+            color: white; 
+            border: none; 
+            border-radius: var(--radius-md); 
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: 600;
+            font-family: inherit;
+            transition: var(--transition-fluid);
+            box-shadow: 0 10px 25px rgba(201, 122, 99, 0.15);
+            margin-top: 10px;
+        }
+        button:hover { 
+            background-color: var(--primary-hover); 
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(201, 122, 99, 0.25);
+        }
+        button:active { transform: translateY(0); }
+
+        /* LIENS D'INSCRIPTION INTERNES */
+        .register-redirect {
+            font-size: 13px; 
+            color: var(--text-light); 
+            margin-top: 28px; 
+            text-align: center;
+            line-height: 1.5;
+        }
+        .register-redirect a { 
+            color: var(--primary-terracotta); 
+            text-decoration: none; 
+            font-weight: 600;
+            transition: var(--transition-fluid);
+        }
+        .register-redirect a:hover { color: var(--primary-hover); text-decoration: underline; }
+
+        /* BANNIÈRES DE MESSAGES SYSTÈME */
+        #message { 
+            margin-top: 24px; 
+            text-align: center; 
+            font-size: 13px; 
+            font-weight: 500; 
+            padding: 12px;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fluid);
+            display: none;
+        }
+
+        /* RESPONSIVE DESIGN (BASCULE EN FULL-PANEL SUR MOBILE) */
+        @media (max-width: 868px) {
+            body { flex-direction: column; }
+            .login-visual-panel { display: none; }
+            .login-form-panel { background-color: var(--bg-boho); flex: 1; }
+            .login-container { background: white; padding: 40px 32px; border-radius: var(--radius-lg); box-shadow: 0 10px 35px rgba(74, 58, 49, 0.04); }
+        }
+
+        @keyframes formAppear {
+            from { opacity: 0; transform: translateX(15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-visual-panel">
+    <div class="brand-logo">🌾 Mon SaaS Photo</div>
+    <div class="visual-statement">
+        <h1>L'écrin de vos plus beaux clichés.</h1>
+        <p>Une technologie d'indexation par IA ultra-rapide mariée à une esthétique minimaliste et chaleureuse. Rangez, retouchez et partagez vos galeries de manière collaborative.</p>
+    </div>
+    <div class="visual-footer">© 2026 Creative Studio Cloud. Tous droits réservés.</div>
+</div>
+
+<div class="login-form-panel">
+    <div class="login-container">
+        <h2>Content de vous revoir</h2>
+        <p class="subtitle">Veuillez renseigner vos identifiants d'accès</p>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <input type="email" id="email" placeholder="Adresse e-mail" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Mot de passe" required>
+            </div>
+            
+            <button type="submit">Se connecter à l'Atelier</button>
+            
+            <p class="register-redirect">
+                Nouvel artisan ? <a href="/pricing.html">Découvrir nos forfaits & s'inscrire</a>
+            </p>
+        </form>
+        
+        <div id="message"></div>
+    </div>
+</div>
+
+<script>
+    // --- INTÉGRATION STRICTE DE TA LOGIQUE D'AUTHENTIFICATION ET DE TES REDIRECTIONS ---
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        
+        const email = document.getElementById('email').value;
+        const motDePasse = document.getElementById('password').value;
+        const messageDiv = document.getElementById('message');
+
+        try {
+            messageDiv.style.display = "block";
+            messageDiv.style.color = "#8A6D3B";
+            messageDiv.style.backgroundColor = "#FCF8E3";
+            messageDiv.style.border = "1px solid #FBEED5";
+            messageDiv.innerText = "⏳ Validation des privilèges...";
+
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, motDePasse })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Enregistrement sécurisé du JWT Token d'accès
+                localStorage.setItem('monBadgePhoto', data.token);
+
+                messageDiv.style.color = "#3C763D";
+                messageDiv.style.backgroundColor = "#DFF0D8";
+                messageDiv.style.border = "1px solid #D6E9C6";
+                messageDiv.innerText = `✅ Connecté avec succès. Content de vous revoir !`;
+                
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html'; 
+                }, 1400);
+
+            } else {
+                messageDiv.style.color = "#A94442";
+                messageDiv.style.backgroundColor = "#F2DEDE";
+                messageDiv.style.border = "1px solid #EBCCD1";
+                messageDiv.innerText = `❌ ${data.message}`;
+            }
+        } catch (error) {
+            messageDiv.style.display = "block";
+            messageDiv.style.color = "#A94442";
+            messageDiv.style.backgroundColor = "#F2DEDE";
+            messageDiv.style.border = "1px solid #EBCCD1";
+            messageDiv.innerText = "❌ Échec de la négociation : impossible de joindre le serveur.";
+        }
+    });
+</script>
+
+</body>
+</html>

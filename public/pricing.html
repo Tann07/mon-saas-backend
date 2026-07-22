@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choisir une Formule — Mon SaaS Photo</title>
+    
+    <!-- Fonts : Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 DESIGN SYSTEM BOHO-TECH */
+        :root {
+            --bg-boho: #FAF6F0;           /* Crème lin doux */
+            --primary-terracotta: #C97A63;  /* Ocre / Terre cuite */
+            --primary-hover: #B26550;
+            --secondary-sage: #8DA191;     /* Vert sauge */
+            --text-dark: #2D2A26;          /* Charbon minéral */
+            --text-light: #766E65;         /* Sable chaud */
+            --radius-lg: 28px;
+            --radius-md: 16px;
+            --transition-fluid: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ✨ RAFFINEMENT GLOBAL */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-boho); 
+            color: var(--text-dark); 
+            padding: 80px 24px; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 👑 ENTÊTE POÉTIQUE */
+        h1 { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 42px; 
+            font-weight: 600; 
+            color: var(--text-dark); 
+            margin-bottom: 12px; 
+            letter-spacing: -0.5px;
+        }
+        .subtitle { 
+            color: var(--text-light); 
+            margin-bottom: 50px; 
+            font-size: 16px; 
+            max-width: 500px;
+            line-height: 1.5;
+        }
+        
+        /* 📊 GRILLE TARIFAIRE ASYMÉTRIQUE */
+        .pricing-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 32px; 
+            max-width: 1040px; 
+            width: 100%;
+            margin: 0 auto; 
+            align-items: center;
+        }
+        
+        /* CARTE DE TARIF STANDARD */
+        .price-card { 
+            background: white; 
+            padding: 45px 35px; 
+            border-radius: var(--radius-lg); 
+            box-shadow: 0 10px 35px rgba(74, 58, 49, 0.02); 
+            border: 1px solid rgba(240, 230, 220, 0.8); 
+            transition: var(--transition-fluid); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            min-height: 400px;
+            position: relative;
+        }
+        .price-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 25px 50px rgba(74, 58, 49, 0.08); 
+        }
+        
+        /* 🌟 MISE EN AVANT DE LA CARTE PREMIUM (FEATURED) */
+        .price-card.featured { 
+            background: var(--text-dark); 
+            color: #FFF;
+            border: none;
+            box-shadow: 0 20px 45px rgba(45, 42, 38, 0.15);
+            min-height: 430px; /* Légèrement plus grande pour l'impact UX */
+        }
+        .price-card.featured:hover {
+            box-shadow: 0 30px 60px rgba(45, 42, 38, 0.25);
+        }
+        
+        /* Petit badge "Le plus prisé" chic */
+        .popular-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-terracotta);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 15px rgba(201, 122, 99, 0.2);
+        }
+
+        .pack-name { 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: var(--text-light); 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            margin-bottom: 8px;
+        }
+        .featured .pack-name { color: var(--secondary-sage); }
+        
+        .storage { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 46px; 
+            font-weight: 600; 
+            color: var(--text-dark); 
+            margin: 10px 0; 
+        }
+        .featured .storage { color: white; }
+        
+        .price { 
+            font-size: 22px; 
+            color: var(--text-dark); 
+            font-weight: 600; 
+            margin-bottom: 35px; 
+        }
+        .featured .price { color: #EFEAE4; }
+        .price-period {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-light);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .featured .price-period { color: var(--text-light); }
+        
+        /* ⚡ BOUTONS DE SÉLECTION ACCUEILLANTS */
+        .btn-select { 
+            background: #FCFAF7; 
+            color: var(--text-dark); 
+            border: 1px solid #E5DCD3; 
+            padding: 16px; 
+            width: 100%; 
+            border-radius: var(--radius-md); 
+            font-weight: 600; 
+            font-size: 14px; 
+            cursor: pointer; 
+            transition: var(--transition-fluid);
+            font-family: inherit;
+        }
+        .btn-select:hover { 
+            background: var(--text-dark); 
+            color: white; 
+            border-color: var(--text-dark);
+        }
+        
+        /* Style du bouton pour l'offre vedette */
+        .featured .btn-select { 
+            background: var(--primary-terracotta); 
+            color: white;
+            border: none;
+            box-shadow: 0 10px 25px rgba(201, 122, 99, 0.2);
+        }
+        .featured .btn-select:hover { 
+            background: var(--primary-hover); 
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(201, 122, 99, 0.35);
+        }
+        .featured .btn-select:active { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <h1>Propulsez votre espace visuel</h1>
+    <p class="subtitle">Sélectionnez l'écrin adapté à la taille de vos souvenirs pour initialiser votre atelier en quelques secondes.</p>
+
+    <div class="pricing-grid">
+        
+        <!-- Formule Découverte -->
+        <div class="price-card">
+            <div>
+                <div class="pack-name">Découverte</div>
+                <div class="storage">15 Go</div>
+                <div class="price">0 € <span class="price-period">/ à vie</span></div>
+            </div>
+            <button class="btn-select" onclick="choisirPack('Gratuit')">Commencer le voyage</button>
+        </div>
+
+        <!-- Formule Premium (Vedette) -->
+        <div class="price-card featured">
+            <div class="popular-badge">Recommandé</div>
+            <div>
+                <div class="pack-name">Premium</div>
+                <div class="storage">1 To</div>
+                <div class="price">9,99 € <span class="price-period" style="color: #A69E94;">/ mois</span></div>
+            </div>
+            <button class="btn-select" onclick="choisirPack('Premium')">Choisir Premium</button>
+        </div>
+
+        <!-- Formule Studio Pro -->
+        <div class="price-card">
+            <div>
+                <div class="pack-name">Studio Pro</div>
+                <div class="storage">5 To</div>
+                <div class="price">29,99 € <span class="price-period">/ mois</span></div>
+            </div>
+            <button class="btn-select" onclick="choisirPack('Pro')">Déployer Pro</button>
+        </div>
+        
+    </div>
+
+<script>
+    // --- CONSERVATION FIÈLE DE TA MÉMOIRE LOCALE ET DU ROUTAGE ---
+    function choisirPack(nomPack) {
+        // Enregistrement du choix utilisateur pour le formulaire d'inscription
+        localStorage.setItem('packSelectionne', nomPack);
+        // Redirection vers la création de compte
+        window.location.href = '/register.html';
+    }
+</script>
+</body>
+</html>
