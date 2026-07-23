@@ -8,6 +8,13 @@ const userRoutes = require('./routes/userRoutes');
 const photoRoutes = require('./routes/photoRoutes');
 const albumRoutes = require('./routes/albumRoutes');
 
+// 📁 Vérifie et crée le dossier uploads s'il n'existe pas
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+    console.log('📁 Dossier uploads créé avec succès !');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -79,7 +86,7 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/monProjetP
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB avec succès !'))
   .catch((err) => console.error('❌ Erreur de connexion à MongoDB :', err));
-  
+
 app.use('/api/auth', userRoutes);
 app.use('/api/photos', photoRoutes);
 app.use('/api/albums', albumRoutes);
