@@ -73,10 +73,13 @@ app.get('/uploads/:filename', (req, res, next) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static('public'));
 
-mongoose.connect('mongodb://127.0.0.1:27017/monProjetPhoto')
+// Connexion dynamique à MongoDB Atlas (Cloud) ou locale en secours
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/monProjetPhoto';
+
+mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB avec succès !'))
   .catch((err) => console.error('❌ Erreur de connexion à MongoDB :', err));
-
+  
 app.use('/api/auth', userRoutes);
 app.use('/api/photos', photoRoutes);
 app.use('/api/albums', albumRoutes);
