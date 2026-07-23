@@ -7,7 +7,7 @@ const path = require('path');
 
 // Importations sécurisées des modèles
 const Photo = require('../models/Photo'); 
-const User = require('../models/user'); 
+const User = require('../models/User'); 
 const Album = require('../models/Album');
 
 // 🤖 SIMULATEUR MISTRAL AI

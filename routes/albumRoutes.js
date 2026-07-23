@@ -6,7 +6,7 @@ const Photo = require('../models/Photo');
 const fs = require('fs'); 
 const path = require('path'); 
 const crypto = require('crypto');
-const User = require('../models/user'); 
+const User = require('../models/User'); 
 
 // 1. ROUTE POUR CRÉER UN ALBUM (Protégée)
 router.post('/create', auth, async (req, res) => {
