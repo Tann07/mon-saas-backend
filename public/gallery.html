@@ -6,185 +6,132 @@
     <title>Galerie Intelligente — Mon SaaS Photo</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* 🎨 DESIGN SYSTEM BOHO-TECH */
         :root {
-            --bg-boho: #FAF6F0;           /* Crème lin doux */
-            --primary-terracotta: #C97A63;  /* Ocre signature */
+            --bg-boho: #FAF6F0;
+            --primary-terracotta: #C97A63;
             --primary-hover: #B26550;
-            --secondary-sage: #8DA191;     /* Vert sauge */
-            --text-dark: #2D2A26;          /* Charbon minéral */
-            --text-light: #766E65;         /* Sable chaud */
-            --glass-bg: rgba(255, 255, 255, 0.75);
+            --secondary-sage: #8DA191;
+            --text-dark: #2D2A26;
+            --text-light: #766E65;
             --radius-lg: 24px;
             --radius-md: 16px;
             --radius-sm: 10px;
-            --transition-fluid: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-fluid: all 0.3s ease;
         }
 
-        /* ✨ RESTRUCTURATION GLOBALE */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: var(--bg-boho); 
-            color: var(--text-dark); 
-            padding-top: 105px; 
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* 🧭 FLOATING NAVBAR */
-        .navbar { 
-            position: fixed; top: 0; left: 0; right: 0; height: 75px; 
-            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 40px; 
-            border-bottom: 1px solid rgba(201, 122, 99, 0.06); z-index: 1000; 
-        }
-        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
-        .nav-links a { 
-            color: var(--text-light); text-decoration: none; font-weight: 600; font-size: 14px; 
-            margin-left: 24px; transition: var(--transition-fluid);
-        }
-        .nav-links a:hover { color: var(--primary-terracotta); }
-
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-boho); color: var(--text-dark); padding-top: 105px; min-height: 100vh; }
         .container { max-width: 1240px; margin: 0 auto; padding: 20px 40px; }
-        
-        .back-link {
-            text-decoration: none; color: var(--text-light); font-weight: 600; font-size: 13px;
-            display: inline-flex; align-items: center; gap: 6px; transition: var(--transition-fluid);
-        }
-        .back-link:hover { color: var(--primary-terracotta); transform: translateX(-2px); }
-        
-        #albumMainTitle { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; margin-top: 6px; margin-bottom: 24px; }
 
-        /* 📁 ZONE DRAG & DROP MINIMALISTE */
-        .upload-section { background: white; padding: 20px; border-radius: var(--radius-lg); box-shadow: 0 10px 30px rgba(74, 58, 49, 0.02); margin-bottom: 32px; border: 1px solid rgba(240, 230, 220, 0.6); }
-        .drag-zone { border: 2px dashed #E5DCD3; padding: 28px; border-radius: var(--radius-md); text-align: center; background: #FCFAF7; cursor: pointer; transition: var(--transition-fluid); }
-        .drag-zone:hover, .drag-zone.dragover { border-color: var(--primary-terracotta); background: rgba(201, 122, 99, 0.02); }
-        .drag-zone p { margin: 0; color: var(--text-dark); font-weight: 500; font-size: 14px; }
-        
-        .upload-actions { display: none; margin-top: 16px; justify-content: space-between; align-items: center; background: var(--bg-boho); padding: 14px 20px; border-radius: var(--radius-md); animation: fadeIn 0.3s ease; }
-        .btn-valider { background: var(--secondary-sage); color: white; border: none; padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; cursor: pointer; transition: var(--transition-fluid); }
-        .btn-valider:hover { background: #7A8E7E; }
+        /* FIL D'ARIANE */
+        .breadcrumb-trail { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; font-size: 13px; font-weight: 600; background: white; padding: 10px 18px; border-radius: var(--radius-sm); border: 1px solid rgba(240, 230, 220, 0.8); width: fit-content; }
+        .crumb-item { color: var(--primary-terracotta); text-decoration: none; }
+        .crumb-item:hover { text-decoration: underline; }
+        .crumb-separator { opacity: 0.4; }
+        .crumb-current { font-weight: 700; }
 
-        /* 🎛️ BARRE D'OUTILS ET CONFIGURATION DE RECHERCHE */
-        .toolbar { 
-            display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: center; 
-            margin-bottom: 32px; background: white; padding: 20px 28px; border-radius: var(--radius-lg); 
-            box-shadow: 0 10px 30px rgba(74, 58, 49, 0.02); border: 1px solid rgba(240, 230, 220, 0.6);
-        }
+        .album-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+        #albumMainTitle { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; }
+
+        .btn-create-sub { background: var(--primary-terracotta); color: white; border: none; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; cursor: pointer; }
         
-        .btn-utility { border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition-fluid); display: inline-flex; align-items: center; gap: 6px; }
-        .btn-zip { background: rgba(201, 122, 99, 0.08); color: var(--primary-terracotta); }
-        .btn-zip:hover { background: var(--primary-terracotta); color: white; }
-        .btn-whatsapp { background: rgba(141, 161, 145, 0.1); color: #437651; }
-        .btn-whatsapp:hover { background: var(--secondary-sage); color: white; }
-        
+        .subalbum-form-box { display: none; background: white; padding: 20px; border-radius: var(--radius-md); margin-bottom: 28px; border: 1px solid rgba(201, 122, 99, 0.3); gap: 12px; align-items: center; }
+        .subalbum-form-box input { flex: 1; padding: 12px 16px; border: 1px solid #E5DCD3; border-radius: var(--radius-sm); outline: none; }
+
+        .subalbums-section { margin-bottom: 36px; display: none; }
+        .subalbums-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+        .subfolder-card { background: white; padding: 18px; border-radius: var(--radius-md); border: 1px solid rgba(240, 230, 220, 0.8); cursor: pointer; display: flex; align-items: center; gap: 12px; }
+
+        .upload-section { background: white; padding: 20px; border-radius: var(--radius-lg); margin-bottom: 32px; border: 1px solid rgba(240, 230, 220, 0.6); }
+        .drag-zone { border: 2px dashed #E5DCD3; padding: 28px; border-radius: var(--radius-md); text-align: center; background: #FCFAF7; cursor: pointer; }
+        .upload-actions { display: none; margin-top: 16px; justify-content: space-between; align-items: center; background: var(--bg-boho); padding: 14px 20px; border-radius: var(--radius-md); }
+
+        .toolbar { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: center; margin-bottom: 32px; background: white; padding: 20px 28px; border-radius: var(--radius-lg); border: 1px solid rgba(240, 230, 220, 0.6); }
+        .btn-utility { border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; }
         .search-box { flex: 1; min-width: 280px; }
-        .search-box input { width: 100%; padding: 12px 18px; border: 1px solid #E5DCD3; border-radius: var(--radius-md); font-size: 14px; background: #FCFAF7; outline: none; transition: var(--transition-fluid); }
-        .search-box input:focus { border-color: var(--primary-terracotta); background: white; }
-        
-        /* Sélecteurs de modes d'affichage */
-        .view-options button { background: #FCFAF7; border: 1px solid #E5DCD3; padding: 10px 18px; margin-left: 6px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 13px; color: var(--text-light); transition: var(--transition-fluid); }
-        .view-options button:hover { color: var(--text-dark); }
+        .search-box input { width: 100%; padding: 12px 18px; border: 1px solid #E5DCD3; border-radius: var(--radius-md); background: #FCFAF7; outline: none; }
+
+        .view-options button { background: #FCFAF7; border: 1px solid #E5DCD3; padding: 10px 18px; margin-left: 6px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 13px; }
         .view-options button.active { background: var(--text-dark); color: white; border-color: var(--text-dark); }
 
-        /* 🖼️ GRILLES COMPORTEMENTALES VARIABLES */
-        .gallery-grid { display: grid; gap: 24px; transition: var(--transition-fluid); }
-        .grid-small { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } 
+        /* PHOTOS GRILLE */
+        .gallery-grid { display: grid; gap: 24px; }
+        .grid-small { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } 
         .grid-large { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 
-        .photo-card { position: relative; border-radius: var(--radius-md); overflow: hidden; background: #1E1C19; aspect-ratio: 1 / 1; box-shadow: 0 10px 25px rgba(74, 58, 49, 0.02); cursor: pointer; transition: var(--transition-fluid); }
-        .photo-card img, .photo-card video { width: 100%; height: 100%; object-fit: cover; display: block; transition: var(--transition-fluid); }
-        .photo-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(74, 58, 49, 0.08); }
-        .photo-card:hover img { transform: scale(1.04); }
-        
-        .badge-video {
-            position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.65);
-            backdrop-filter: blur(6px); color: white; padding: 4px 8px; border-radius: 8px;
-            font-size: 10px; font-weight: 700; text-transform: uppercase; z-index: 2;
-        }
-
-        .play-overlay {
-            position: absolute; inset: 0; display: flex; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.25); color: white; font-size: 32px; transition: var(--transition-fluid); z-index: 1;
-        }
-        .photo-card:hover .play-overlay { background: rgba(0,0,0,0.1); transform: scale(1.1); }
-
-        .btn-delete { position: absolute; top: 12px; right: 12px; background: rgba(201, 99, 99, 0.9); color: white; border: none; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 11px; font-weight: 600; opacity: 0; z-index: 10; transition: var(--transition-fluid); }
+        .photo-card { position: relative; border-radius: var(--radius-md); overflow: hidden; background: #EFEAE4; aspect-ratio: 1 / 1; cursor: pointer; }
+        .photo-card img, .photo-card video { width: 100%; height: 100%; object-fit: cover; }
+        .btn-delete { position: absolute; top: 12px; right: 12px; background: rgba(201, 99, 99, 0.9); color: white; border: none; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 11px; opacity: 0; }
         .photo-card:hover .btn-delete { opacity: 1; }
-        .btn-delete:hover { background: #C96363; }
 
-        /* 🪟 INSPECTEUR DE STRUCTURE IA (MODAL) */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(45, 42, 38, 0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center; padding: 24px; animation: fadeIn 0.3s ease; }
-        .modal-content { background: white; padding: 35px; border-radius: var(--radius-lg); max-width: 760px; width: 100%; display: flex; gap: 32px; flex-wrap: wrap; position: relative; border: 1px solid rgba(240, 230, 220, 0.5); box-shadow: 0 30px 70px rgba(74, 58, 49, 0.15); }
-        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 20px; cursor: pointer; border: none; background: rgba(0,0,0,0.04); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: var(--transition-fluid); z-index: 20; }
+        /* MODAL INSPECTEUR IA */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(45, 42, 38, 0.6); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center; padding: 24px; }
+        .modal-content { background: white; padding: 35px; border-radius: var(--radius-lg); max-width: 720px; width: 100%; display: flex; gap: 32px; flex-wrap: wrap; position: relative; }
+        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 22px; cursor: pointer; border: none; background: rgba(0,0,0,0.06); width: 36px; height: 36px; border-radius: 50%; display:flex; align-items:center; justify-content:center; }
         .modal-close:hover { background: #C96363; color: white; }
-        
-        .modal-media-wrapper { flex: 1.1; min-width: 280px; max-height: 380px; display: flex; justify-content: center; align-items: center; background: #1E1C19; border-radius: var(--radius-md); overflow: hidden; }
-        .modal-media-wrapper img, .modal-media-wrapper video { width: 100%; height: 100%; object-fit: contain; }
-
+        .modal-img { flex: 1.1; min-width: 280px; max-height: 380px; object-fit: contain; border-radius: var(--radius-md); background: #FCFAF7; border: 1px solid #E5DCD3; }
         .modal-info { flex: 1; min-width: 260px; display: flex; flex-direction: column; justify-content: space-between; }
-        
         .tag-pill { display: inline-block; background: rgba(201, 122, 99, 0.08); color: var(--primary-terracotta); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; margin: 4px 2px; }
-        .insta-box { background: #FCFAF7; padding: 14px; border-radius: var(--radius-sm); font-size: 13px; font-style: italic; color: var(--text-dark); margin-top: 10px; border-left: 3px solid var(--primary-terracotta); white-space: pre-line; line-height: 1.5; }
-        
-        .btn-modal-action { background: var(--text-dark); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 12px; margin-top: 8px; transition: var(--transition-fluid); width: 100%; text-align: center; }
-        .btn-modal-action:hover { background: #44403A; }
+        .insta-box { background: #FCFAF7; padding: 14px; border-radius: var(--radius-sm); font-size: 13px; font-style: italic; margin-top: 10px; border-left: 3px solid var(--primary-terracotta); }
+        .btn-modal-action { background: var(--text-dark); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 12px; margin-top: 8px; width: 100%; }
 
-        /* 🎞️ LIGHTBOX COMPLÈTE DIAPORAMA */
-        .lightbox-fullscreen { display: none; position: fixed; inset: 0; background: rgba(45, 42, 38, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 3000; justify-content: center; align-items: center; user-select: none; animation: fadeIn 0.3s ease; }
-        .lightbox-btn-nav { position: absolute; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 18px; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; transition: var(--transition-fluid); z-index: 3100; }
-        .lightbox-btn-nav:hover { background: white; color: var(--text-dark); }
-        
-        #lightboxMediaContainer { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        .lightbox-media-item { max-width: 85%; max-height: 80vh; object-fit: contain; border-radius: var(--radius-sm); box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* LIGHTBOX DIAPORAMA FULLSCREEN */
+        .lightbox-fullscreen { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.92); z-index: 3000; justify-content: center; align-items: center; }
+        .lightbox-close { position: absolute; top: 24px; right: 24px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 24px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display:flex; align-items:center; justify-content:center; }
+        .lightbox-close:hover { background: #C96363; }
+        .lightbox-btn-nav { position: absolute; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 20px; width: 54px; height: 54px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #lightboxImg { max-width: 85%; max-height: 80vh; object-fit: contain; }
     </style>
 </head>
+
+<script src="/navbar.js"></script>
+
 <body>
 
-<nav class="navbar">
-    <div class="navbar-brand">🌾 Mon SaaS Photo</div>
-    <div class="nav-links">
-        <a href="/my-albums.html">Mes Albums</a>
-        <a href="#" id="logoutBtn" style="color: #C96363;">Déconnexion</a>
-    </div>
-</nav>
-
 <div class="container">
-    <div style="margin-bottom: 24px;">
-        <a href="/my-albums.html" class="back-link">← Retour aux collections</a>
-        <h1 id="albumMainTitle">Chargement de la collection...</h1>
+    <div class="breadcrumb-trail" id="breadcrumbTrail">
+        <a class="crumb-item" href="/my-albums.html">📁 Mes Collections</a>
+    </div>
+
+    <div class="album-header-row">
+        <h1 id="albumMainTitle">Chargement...</h1>
+        <button class="btn-create-sub" id="btnToggleSubForm">📁 + Créer un sous-album</button>
+    </div>
+
+    <div class="subalbum-form-box" id="subalbumFormBox">
+        <input type="text" id="subalbumTitleInput" placeholder="Nom du sous-album...">
+        <button class="btn-create-sub" id="btnConfirmSubalbum">Valider la création</button>
+    </div>
+
+    <div class="subalbums-section" id="subalbumsSection">
+        <h3>📁 Sous-dossiers :</h3>
+        <div class="subalbums-grid" id="subalbumsGrid"></div>
     </div>
 
     <div class="upload-section">
         <div class="drag-zone" id="dropZone">
-            <p>✨ Glissez vos images ou vidéos ici ou <span style="color: var(--primary-terracotta); font-weight:600;">parcourez vos fichiers</span></p>
-            <input type="file" id="fileInput" multiple accept="image/*,video/*" style="display: none;">
+            <p>✨ Glissez vos images ici ou <span style="color: var(--primary-terracotta); font-weight:600;">parcourez vos fichiers</span></p>
+            <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
         </div>
         <div class="upload-actions" id="uploadActions">
-            <div id="fileCountText" style="font-weight: 600; font-size: 14px;">0 fichier prêt à être indexé</div>
-            <button id="btnValiderUpload" class="btn-valider">Lancer l'importation par IA</button>
+            <div id="fileCountText" style="font-weight: 600; font-size: 14px;">0 photo prête</div>
+            <button id="btnValiderUpload" style="background:var(--secondary-sage); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Lancer l'importation par IA</button>
         </div>
     </div>
 
     <div class="toolbar">
-        <div style="display:flex; gap:12px; flex-wrap:wrap;">
-            <button id="btnDownloadAll" class="btn-utility btn-zip">📥 Archiver la collection (.ZIP)</button>
-            <button id="btnShareWhatsApp" class="btn-utility btn-whatsapp">💬 Diffuser sur WhatsApp</button>
+        <div style="display:flex; gap:12px;">
+            <button id="btnDownloadAll" class="btn-utility" style="background:rgba(201, 122, 99, 0.1); color:var(--primary-terracotta);">📥 Archiver (.ZIP)</button>
+            <button id="btnShareWhatsApp" class="btn-utility" style="background:rgba(141, 161, 145, 0.1); color:#437651;">💬 Diffuser WhatsApp</button>
         </div>
-        
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Filtrer par mot-clé ou tag de l'IA...">
         </div>
-
         <div class="view-options">
             <button id="btnViewSmall" class="active">Vue Mosaïque</button>
             <button id="btnViewLarge">Vue Confort (Inspecteur)</button>
@@ -194,26 +141,24 @@
     <div class="gallery-grid grid-small" id="galleryGrid"></div>
 </div>
 
-<!-- 🪟 INSPECTEUR DE STRUCTURE IA -->
+<!-- MODAL INSPECTEUR IA -->
 <div class="modal" id="photoModal">
     <div class="modal-content">
-        <button class="modal-close" id="closeModal">✕</button>
-        
-        <div class="modal-media-wrapper" id="modalMediaWrapper"></div>
-
+        <button class="modal-close" id="closeModal" title="Fermer">✕</button>
+        <img class="modal-img" id="modalImg" src="" alt="Source">
         <div class="modal-info">
             <div>
-                <h2 id="modalTitle" style="font-family:'Playfair Display', serif; font-size:24px; font-weight:600; margin-bottom:4px;">Sans titre</h2>
-                <p id="modalDesc" style="color: var(--text-light); font-size: 13px; line-height: 1.5; margin-bottom: 16px;"></p>
-                <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); margin-bottom: 6px;">🏷️ Analyse sémantique :</h4>
-                <div id="modalTags" style="margin-bottom: 16px;"></div>
+                <h2 id="modalTitle" style="font-family:'Playfair Display', serif; font-size:22px;">Sans titre</h2>
+                <p id="modalDesc" style="color: var(--text-light); font-size: 13px; margin-bottom: 12px;"></p>
+                <h4 style="font-size: 11px; text-transform: uppercase; color: var(--text-light);">🏷️ Analyse sémantique :</h4>
+                <div id="modalTags" style="margin-bottom: 12px;"></div>
                 
                 <button class="btn-modal-action" id="btnLaunchSlideshow" style="background: #8A65B2;">🎞️ Ouvrir en Plein Écran</button>
-                <button class="btn-modal-action" id="btnDownloadSingle" style="background: var(--secondary-sage);">📥 Enregistrer ce fichier</button>
+                <button class="btn-modal-action" id="btnDownloadSingle" style="background: var(--secondary-sage);">📥 Enregistrer l'image</button>
                 <button class="btn-modal-action" id="btnSetCover" style="background: #FCFAF7; color: var(--text-dark); border: 1px solid #E5DCD3;">📸 Définir comme couverture</button>
             </div>
-            <div id="instaSection" style="margin-top: 18px;">
-                <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary-terracotta); margin-bottom: 4px;">✨ Suggestion Réseaux :</h4>
+            <div id="instaSection" style="margin-top: 14px;">
+                <h4 style="font-size: 11px; text-transform: uppercase; color: var(--primary-terracotta);">✨ Suggestion Réseaux :</h4>
                 <div class="insta-box" id="modalInsta"></div>
                 <button class="btn-modal-action" id="btnCopy" style="background: var(--primary-terracotta);">📋 Copier la description</button>
             </div>
@@ -221,13 +166,11 @@
     </div>
 </div>
 
-<!-- 🎞️ LIGHTBOX COMPLÈTE DIAPORAMA -->
+<!-- LIGHTBOX FULLSCREEN -->
 <div class="lightbox-fullscreen" id="lightboxFullscreen">
-    <button id="closeLightbox" style="position: absolute; top: 24px; right: 24px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 3100;">✕</button>
+    <button class="lightbox-close" id="closeLightbox" title="Fermer">✕</button>
     <button class="lightbox-btn-nav" id="prevLightbox" style="left: 30px;">❮</button>
-    
-    <div id="lightboxMediaContainer"></div>
-    
+    <img id="lightboxImg" src="" alt="Diaporama">
     <button class="lightbox-btn-nav" id="nextLightbox" style="right: 30px;">❯</button>
 </div>
 
@@ -235,332 +178,232 @@
     const token = localStorage.getItem('monBadgePhoto');
     if (!token) window.location.replace('/index.html');
 
-    const albumId = localStorage.getItem('currentAlbumId');
+    const urlParams = new URLSearchParams(window.location.search);
+    let albumId = urlParams.get('id') || localStorage.getItem('currentAlbumId');
+    if (albumId) localStorage.setItem('currentAlbumId', albumId);
+
     const galleryGrid = document.getElementById('galleryGrid');
     const modal = document.getElementById('photoModal'); 
     const lbFullscreen = document.getElementById('lightboxFullscreen');
-    const lbMediaContainer = document.getElementById('lightboxMediaContainer');
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const uploadActions = document.getElementById('uploadActions');
-    const fileCountText = document.getElementById('fileCountText');
-    const btnValiderUpload = document.getElementById('btnValiderUpload');
+    const lbImg = document.getElementById('lightboxImg');
 
     let toutesLesPhotos = []; 
     let photosFiltrees = [];
-    let fichiersAEnvoyer = []; 
     let indexInspecteur = 0;
-    let listePhotosEnCours = [];
-    let modeAffichage = 'small'; 
-
-    document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.replace('/index.html'); });
+    let modeAffichage = 'small'; // 'small' = Mosaïque (Grand direct), 'large' = Confort (Inspecteur)
 
     const btnSmall = document.getElementById('btnViewSmall');
     const btnLarge = document.getElementById('btnViewLarge');
     
-    btnSmall.addEventListener('click', () => { 
+    btnSmall.onclick = () => { 
         galleryGrid.className = 'gallery-grid grid-small'; 
-        btnSmall.classList.add('active'); 
-        btnLarge.classList.remove('active'); 
-        modeAffichage = 'small'; 
-        afficherPhotos(photosFiltrees);
-    });
-    
-    btnLarge.addEventListener('click', () => { 
+        btnSmall.classList.add('active'); btnLarge.classList.remove('active'); 
+        modeAffichage = 'small'; afficherPhotos(photosFiltrees);
+    };
+    btnLarge.onclick = () => { 
         galleryGrid.className = 'gallery-grid grid-large'; 
-        btnLarge.classList.add('active'); 
-        btnSmall.classList.remove('active'); 
-        modeAffichage = 'large'; 
-        afficherPhotos(photosFiltrees);
-    });
-
-    fileInput.addEventListener('change', (e) => { majFichiersSelectionnes(e.target.files); });
+        btnLarge.classList.add('active'); btnSmall.classList.remove('active'); 
+        modeAffichage = 'large'; afficherPhotos(photosFiltrees);
+    };
 
     window.addEventListener('DOMContentLoaded', async () => {
-        await recupererNomAlbum();
-        await chargerPhotos();
-        configurerDragAndDrop();
+        await chargerContenu();
+        configurerUpload();
+        configurerFormSub();
     });
 
-    async function recupererNomAlbum() {
+    async function chargerContenu() {
         try {
-            const response = await fetch('/api/albums/my-albums', { headers: { 'Authorization': `Bearer ${token}` } });
-            const albums = await response.json();
-            const cetAlbum = albums.find(a => a._id === albumId);
-            if(cetAlbum) document.getElementById('albumMainTitle').innerText = `${cetAlbum.titre}`;
-        } catch (err) {}
+            const res = await fetch(`/api/albums/${albumId}/content`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.album) document.getElementById('albumMainTitle').innerText = data.album.titre;
+                construireBreadcrumb(data.breadcrumb || []);
+                afficherSousAlbums(data.subAlbums || []);
+                toutesLesPhotos = data.photos || [];
+                photosFiltrees = [...toutesLesPhotos];
+                afficherPhotos(photosFiltrees);
+                configurerGlobaux();
+            }
+        } catch(e) {}
     }
 
-    async function chargerPhotos() {
-        try {
-            const response = await fetch(`/api/photos/album/${albumId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-            toutesLesPhotos = await response.json();
-            photosFiltrees = [...toutesLesPhotos];
-            afficherPhotos(photosFiltrees);
-            configurerBoutonsGlobaux();
-        } catch (error) { galleryGrid.innerHTML = "<p style='grid-column:1/-1; text-align:center; color:var(--primary-terracotta);'>❌ Impossible de charger la pellicule photo.</p>"; }
+    function construireBreadcrumb(breadcrumb) {
+        const trail = document.getElementById('breadcrumbTrail');
+        let html = `<a class="crumb-item" href="/my-albums.html">📁 Mes Collections</a>`;
+        breadcrumb.forEach((item) => {
+            html += `<span class="crumb-separator">/</span>`;
+            if (item._id === albumId) html += `<span class="crumb-current">${item.titre}</span>`;
+            else html += `<a class="crumb-item" href="/gallery.html?id=${item._id}">${item.titre}</a>`;
+        });
+        trail.innerHTML = html;
     }
 
-    function afficherPhotos(listePhotos) {
+    function afficherSousAlbums(subAlbums) {
+        const grid = document.getElementById('subalbumsGrid');
+        const section = document.getElementById('subalbumsSection');
+        grid.innerHTML = '';
+        if (subAlbums.length > 0) {
+            section.style.display = 'block';
+            subAlbums.forEach(sub => {
+                const card = document.createElement('div');
+                card.className = 'subfolder-card';
+                card.innerHTML = `<div style="font-size:24px;">📁</div><div><div style="font-weight:700;">${sub.titre}</div><div style="font-size:11px; color:var(--primary-terracotta);">Ouvrir ➔</div></div>`;
+                card.onclick = () => window.location.href = `/gallery.html?id=${sub._id}`;
+                grid.appendChild(card);
+            });
+        } else section.style.display = 'none';
+    }
+
+    function afficherPhotos(liste) {
         galleryGrid.innerHTML = '';
-        if (listePhotos.length === 0) {
-            galleryGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-light); font-style:italic;'>Aucun fichier rattaché à ce dossier.</p>";
+        if (!liste || liste.length === 0) {
+            galleryGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-light); italic;'>Aucun fichier photo.</p>";
             return;
         }
-        listePhotos.forEach((item, index) => {
-            let url = item.urlImage || '';
-            if (url && !url.startsWith('http')) {
-                url = window.location.origin + (url.startsWith('/') ? '' : '/') + url;
-            }
 
-            const estVideo = item.typeMedia === 'video' || url.endsWith('.mp4') || url.endsWith('.mov');
+        liste.forEach((photo, index) => {
             const card = document.createElement('div');
             card.className = 'photo-card';
-            
-            if (estVideo) {
-                card.innerHTML = `
-                    <div class="badge-video">🎬 VIDÉO</div>
-                    <div class="play-overlay">▶</div>
-                    <video src="${url}#t=0.5" preload="metadata" muted playsinline></video>
-                    <button class="btn-delete">✕ Supprimer</button>
-                `;
-            } else {
-                card.innerHTML = `
-                    <img src="${url}" alt="Cliché">
-                    <button class="btn-delete">✕ Supprimer</button>
-                `;
-            }
-            
-            card.addEventListener('click', (e) => {
-                if (e.target.classList.contains('btn-delete')) return;
-                
-                indexInspecteur = index;
-                listePhotosEnCours = listePhotos;
+            const estVideo = photo.typeMedia === 'video' || (photo.urlImage && photo.urlImage.match(/\.(mp4|mov|webm)$/i));
 
-                if (modeAffichage === 'small') {
-                    ouvrirDiaporamaDirect(indexInspecteur, listePhotosEnCours);
-                } else {
-                    ouvrirInspecteur(indexInspecteur, listePhotosEnCours);
+            card.innerHTML = `
+                ${estVideo ? 
+                    `<video src="${photo.urlImage}"></video>
+                     <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.25);">
+                        <div style="width:40px; height:40px; background:rgba(255,255,255,0.85); border-radius:50%; display:flex; align-items:center; justify-content:center; padding-left:2px;">▶️</div>
+                     </div>` : 
+                    `<img src="${photo.urlImage}">`
                 }
-            });
+                <button class="btn-delete">✕ Supprimer</button>
+            `;
 
-            card.querySelector('.btn-delete').addEventListener('click', (e) => { e.stopPropagation(); supprimerPhoto(item._id); });
+            card.onclick = (e) => {
+                if (e.target.classList.contains('btn-delete')) return;
+                indexInspecteur = index;
+
+                // 🎯 COMPORTEMENT EXACT :
+                // Mosaïque = Ouvrir en grand direct (Lightbox)
+                // Confort = Ouvrir Inspecteur IA
+                if (modeAffichage === 'small') {
+                    ouvrirDiaporamaDirect(indexInspecteur, liste);
+                } else {
+                    ouvrirInspecteur(indexInspecteur, liste);
+                }
+            };
+
+            card.querySelector('.btn-delete').onclick = (e) => { e.stopPropagation(); supprimerPhoto(photo._id); };
             galleryGrid.appendChild(card);
         });
     }
 
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        const recherche = e.target.value.toLowerCase().trim();
-        photosFiltrees = toutesLesPhotos.filter(photo => {
-            return (photo.tags && photo.tags.some(tag => tag.toLowerCase().includes(recherche))) || 
-                   (photo.titre && photo.titre.toLowerCase().includes(recherche));
-        });
-        afficherPhotos(photosFiltrees);
-    });
-
-    function configurerDragAndDrop() {
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); majFichiersSelectionnes(e.dataTransfer.files); });
-
-        btnValiderUpload.addEventListener('click', async () => {
-            if (fichiersAEnvoyer.length === 0) return;
-            btnValiderUpload.innerText = "⏳ Indexation IA...";
-            const formData = new FormData();
-            for (let i = 0; i < fichiersAEnvoyer.length; i++) { formData.append('image', fichiersAEnvoyer[i]); }
-            formData.append('albumId', albumId);
-
-            try {
-                const response = await fetch('/api/photos/add', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
-                if (response.ok) window.location.reload();
-                else { const err = await response.json(); alert("Erreur d'import : " + err.message); resetUpload(); }
-            } catch (error) { alert("Liaison réseau défaillante."); resetUpload(); }
-        });
-    }
-
-    function majFichiersSelectionnes(files) {
-        fichiersAEnvoyer = Array.from(files).filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'));
-        if (fichiersAEnvoyer.length > 0) {
-            fileCountText.innerText = `✨ ${fichiersAEnvoyer.length} fichier${fichiersAEnvoyer.length > 1 ? 's' : ''} prêt${fichiersAEnvoyer.length > 1 ? 's' : ''} pour l'IA.`;
-            uploadActions.style.display = 'flex';
-        } else { resetUpload(); }
-    }
-
-    function resetUpload() { fichiersAEnvoyer = []; uploadActions.style.display = 'none'; fileInput.value = ''; btnValiderUpload.innerText = "Lancer l'importation par IA"; }
-
-    function RendreElementMedia(item, className = '') {
-        let url = item.urlImage || '';
-        if (url && !url.startsWith('http')) {
-            url = window.location.origin + (url.startsWith('/') ? '' : '/') + url;
-        }
-
-        const estVideo = item.typeMedia === 'video' || url.endsWith('.mp4') || url.endsWith('.mov');
-
-        if (estVideo) {
-            const vid = document.createElement('video');
-            vid.className = className;
-            vid.controls = true;
-            vid.autoplay = true;
-            vid.playsInline = true;
-            vid.innerHTML = `
-                <source src="${url}" type="video/mp4">
-                <source src="${url}" type="video/quicktime">
-                Votre navigateur ne prend pas en charge la vidéo.
-            `;
-            return vid;
-        } else {
-            const img = document.createElement('img');
-            img.className = className;
-            img.src = url;
-            img.alt = item.titre || 'Photo';
-            return img;
-        }
-    }
-
     function ouvrirDiaporamaDirect(index, list) {
         indexInspecteur = index;
-        listePhotosEnCours = list;
-        lbMediaContainer.innerHTML = '';
-        lbMediaContainer.appendChild(RendreElementMedia(listePhotosEnCours[indexInspecteur], 'lightbox-media-item'));
+        lbImg.src = list[indexInspecteur].urlImage;
         lbFullscreen.style.display = 'flex';
     }
 
     function ouvrirInspecteur(index, list) {
         indexInspecteur = index;
-        listePhotosEnCours = list;
-        const item = listePhotosEnCours[indexInspecteur];
+        const photo = list[indexInspecteur];
 
-        const wrapper = document.getElementById('modalMediaWrapper');
-        wrapper.innerHTML = '';
-        wrapper.appendChild(RendreElementMedia(item));
-
-        document.getElementById('modalTitle').innerText = item.titre || (item.typeMedia === 'video' ? "Séquence Vidéo" : "Cliché HD");
-        document.getElementById('modalDesc').innerText = item.description || "Aucune note narrative ajoutée.";
+        document.getElementById('modalImg').src = photo.urlImage;
+        document.getElementById('modalTitle').innerText = photo.titre || "Fichier sans titre";
+        document.getElementById('modalDesc').innerText = photo.description || "";
         
         const tagsContainer = document.getElementById('modalTags');
         tagsContainer.innerHTML = '';
-        if (item.tags && item.tags.length > 0) {
-            item.tags.forEach(tag => {
-                const span = document.createElement('span'); span.className = 'tag-pill'; span.innerText = `#${tag}`; tagsContainer.appendChild(span);
-            });
-        } else { tagsContainer.innerHTML = "<span style='font-size:12px; color:var(--text-light);'>Aucune étiquette sémantique détectée.</span>"; }
+        if (photo.tags) photo.tags.forEach(tag => tagsContainer.innerHTML += `<span class="tag-pill">#${tag}</span>`);
 
         const modalInsta = document.getElementById('modalInsta');
-        if (item.suggestionInstagram) {
-            modalInsta.innerText = item.suggestionInstagram;
+        if (photo.suggestionInstagram) {
+            modalInsta.innerText = photo.suggestionInstagram;
             document.getElementById('instaSection').style.display = 'block';
-        } else { document.getElementById('instaSection').style.display = 'none'; }
+        } else document.getElementById('instaSection').style.display = 'none';
 
         modal.style.display = 'flex';
 
         document.getElementById('btnDownloadSingle').onclick = async () => {
-            try {
-                let url = item.urlImage || '';
-                if (url && !url.startsWith('http')) {
-                    url = window.location.origin + (url.startsWith('/') ? '' : '/') + url;
-                }
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const estVideo = item.typeMedia === 'video' || url.endsWith('.mp4') || url.endsWith('.mov');
-                const ext = estVideo ? 'mp4' : 'jpg';
-
-                const urlBlob = window.URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = urlBlob; a.download = `${item.titre || 'Media_Studio'}.${ext}`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            } catch (err) { alert("Erreur lors du téléchargement."); }
+            const a = document.createElement('a'); a.href = photo.urlImage; a.download = 'photo.jpg'; a.click();
         };
 
         document.getElementById('btnSetCover').onclick = async () => {
-            await fetch(`/api/albums/${albumId}/cover`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ urlImage: item.urlImage })
-            });
-            alert("📸 Ce média a été défini comme vitrine de la collection !");
+            await fetch(`/api/albums/${albumId}/cover`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ urlImage: photo.urlImage }) });
+            alert("📸 Définie comme couverture !");
         };
 
-        document.getElementById('btnCopy').onclick = () => { navigator.clipboard.writeText(item.suggestionInstagram); alert("📋 Description Instagram copiée !"); };
+        document.getElementById('btnCopy').onclick = () => { navigator.clipboard.writeText(photo.suggestionInstagram); alert("📋 Copié !"); };
     }
 
-    function naviguerDiaporama(direction) {
-        indexInspecteur += direction;
-        if (indexInspecteur >= listePhotosEnCours.length) indexInspecteur = 0;
-        if (indexInspecteur < 0) indexInspecteur = listePhotosEnCours.length - 1;
-        
-        lbMediaContainer.innerHTML = '';
-        lbMediaContainer.appendChild(RendreElementMedia(listePhotosEnCours[indexInspecteur], 'lightbox-media-item'));
+    function naviguerDiaporama(dir) {
+        indexInspecteur += dir;
+        if (indexInspecteur >= toutesLesPhotos.length) indexInspecteur = 0;
+        if (indexInspecteur < 0) indexInspecteur = toutesLesPhotos.length - 1;
+        lbImg.src = toutesLesPhotos[indexInspecteur].urlImage;
     }
 
-    function configurerBoutonsGlobaux() {
-        document.getElementById('btnDownloadAll').onclick = async () => {
-            if(toutesLesPhotos.length === 0) return;
-            const btn = document.getElementById('btnDownloadAll'); btn.innerText = "⏳ Écriture de l'archive...";
-            const zip = new JSZip();
-            for (let i = 0; i < toutesLesPhotos.length; i++) {
-                try { 
-                    const item = toutesLesPhotos[i];
-                    let url = item.urlImage || '';
-                    if (url && !url.startsWith('http')) {
-                        url = window.location.origin + (url.startsWith('/') ? '' : '/') + url;
-                    }
-                    const response = await fetch(url); 
-                    const blob = await response.blob(); 
-                    const estVideo = item.typeMedia === 'video' || url.endsWith('.mp4') || url.endsWith('.mov');
-                    const ext = estVideo ? 'mp4' : 'jpg';
-
-                    zip.file(`Souvenir_${i+1}.${ext}`, blob); 
-                } catch (err) {}
-            }
-            zip.generateAsync({ type: "blob" }).then((content) => {
-                const urlZip = window.URL.createObjectURL(content);
-                const a = document.createElement('a'); a.href = urlZip; a.download = `Collection_Archive.zip`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a); btn.innerText = "📥 Archiver la collection (.ZIP)";
-            });
-        };
-
-        document.getElementById('btnShareWhatsApp').onclick = async () => {
-            const resAlbum = await fetch(`/api/albums/my-albums`, { headers: { 'Authorization': `Bearer ${token}` } });
-            const albums = await resAlbum.json();
-            const cetAlbum = albums.find(a => a._id === albumId);
-            if(!cetAlbum || cetAlbum.statut !== 'public') return alert("⚠️ Cette collection est privée. Rendez-la publique dans vos paramètres pour générer sa clé d'accès unique !");
-            const message = encodeURIComponent(`👋 Découvrez la galerie en ligne partagée : ${window.location.origin}/client-gallery.html?code=${cetAlbum.codePartage}`);
-            window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
-        };
-    }
-
-    document.getElementById('btnLaunchSlideshow').addEventListener('click', () => { 
-        modal.style.display = 'none'; 
-        lbMediaContainer.innerHTML = '';
-        lbMediaContainer.appendChild(RendreElementMedia(listePhotosEnCours[indexInspecteur], 'lightbox-media-item'));
-        lbFullscreen.style.display = 'flex'; 
-    });
-
-    document.getElementById('closeLightbox').addEventListener('click', () => {
-        lbFullscreen.style.display = 'none';
-        lbMediaContainer.innerHTML = '';
-    });
-    document.getElementById('nextLightbox').addEventListener('click', () => naviguerDiaporama(1));
-    document.getElementById('prevLightbox').addEventListener('click', () => naviguerDiaporama(-1));
-    document.getElementById('closeModal').addEventListener('click', () => modal.style.display = 'none');
+    // BOUTONS DE FERMETURE
+    document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
+    document.getElementById('closeLightbox').onclick = () => lbFullscreen.style.display = 'none';
+    document.getElementById('nextLightbox').onclick = () => naviguerDiaporama(1);
+    document.getElementById('prevLightbox').onclick = () => naviguerDiaporama(-1);
+    document.getElementById('btnLaunchSlideshow').onclick = () => { modal.style.display = 'none'; lbImg.src = toutesLesPhotos[indexInspecteur].urlImage; lbFullscreen.style.display = 'flex'; };
 
     document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { modal.style.display = 'none'; lbFullscreen.style.display = 'none'; }
         if (lbFullscreen.style.display === 'flex') {
             if (e.key === 'ArrowRight') naviguerDiaporama(1);
             if (e.key === 'ArrowLeft') naviguerDiaporama(-1);
-            if (e.key === 'Escape') {
-                lbFullscreen.style.display = 'none';
-                lbMediaContainer.innerHTML = '';
-            }
-        } else if (modal.style.display === 'flex') {
-            if (e.key === 'ArrowRight') { let n=indexInspecteur+1; if(n>=listePhotosEnCours.length) n=0; ouvrirInspecteur(n, listePhotosEnCours); }
-            if (e.key === 'ArrowLeft') { let n=indexInspecteur-1; if(n<0) n=listePhotosEnCours.length-1; ouvrirInspecteur(n, listePhotosEnCours); }
-            if (e.key === 'Escape') modal.style.display = 'none';
         }
     });
 
+    function configurerUpload() {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const btnValider = document.getElementById('btnValiderUpload');
+
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => {
+            if(e.target.files.length > 0) document.getElementById('uploadActions').style.display = 'flex';
+        };
+
+        btnValider.onclick = async () => {
+            const formData = new FormData();
+            for (let f of fileInput.files) formData.append('image', f);
+            formData.append('albumId', albumId);
+            await fetch('/api/photos/add', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
+            window.location.reload();
+        };
+    }
+
+    function configurerFormSub() {
+        document.getElementById('btnToggleSubForm').onclick = () => {
+            const box = document.getElementById('subalbumFormBox');
+            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+        };
+        document.getElementById('btnConfirmSubalbum').onclick = async () => {
+            const titre = document.getElementById('subalbumTitleInput').value.trim();
+            if (!titre) return;
+            await fetch('/api/albums/create', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ titre, parentAlbum: albumId }) });
+            window.location.reload();
+        };
+    }
+
+    function configurerGlobaux() {
+        document.getElementById('btnDownloadAll').onclick = async () => {
+            const zip = new JSZip();
+            for (let i = 0; i < toutesLesPhotos.length; i++) {
+                const res = await fetch(toutesLesPhotos[i].urlImage);
+                const blob = await res.blob();
+                zip.file(`photo_${i+1}.jpg`, blob);
+            }
+            const content = await zip.generateAsync({ type: "blob" });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(content); a.download = 'collection.zip'; a.click();
+        };
+    }
+
     async function supprimerPhoto(id) {
-        if (!confirm("Supprimer définitivement ce fichier de l'infrastructure cloud ?")) return;
+        if (!confirm("Supprimer ce fichier ?")) return;
         await fetch(`/api/photos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
         window.location.reload();
     }

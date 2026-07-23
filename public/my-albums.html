@@ -8,170 +8,110 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* 🎨 DESIGN SYSTEM BOHO-TECH */
         :root {
-            --bg-boho: #FAF6F0;           /* Fond crème organique */
-            --primary-terracotta: #C97A63;  /* Ocre signature */
+            --bg-boho: #FAF6F0;
+            --primary-terracotta: #C97A63;
             --primary-hover: #B26550;
-            --secondary-sage: #8DA191;     /* Vert sauge / Drive */
-            --text-dark: #2D2A26;          /* Charbon doux */
-            --text-light: #766E65;         /* Teinte sable secondaire */
-            --glass-bg: rgba(255, 255, 255, 0.75);
+            --secondary-sage: #8DA191;
+            --text-dark: #2D2A26;
+            --text-light: #766E65;
             --radius-lg: 24px;
             --radius-md: 16px;
             --radius-sm: 10px;
-            --transition-fluid: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-fluid: all 0.3s ease;
         }
 
-        /* ✨ STRUCTURATION */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: var(--bg-boho); 
             color: var(--text-dark); 
-            padding: 120px 24px 60px 24px; 
+            padding: 100px 20px 60px 20px; 
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
-
-        /* 🧭 NAV BAR GLASSMORPHISM */
-        .navbar { 
-            position: fixed; top: 0; left: 0; right: 0; height: 75px; 
-            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 40px; 
-            border-bottom: 1px solid rgba(201, 122, 99, 0.06); z-index: 1000; 
-        }
-        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
-        .nav-links a { 
-            color: var(--text-light); text-decoration: none; font-weight: 600; font-size: 14px; 
-            margin-left: 24px; transition: var(--transition-fluid);
-        }
-        .nav-links a:hover { color: var(--primary-terracotta); }
-        .nav-links a.active { color: var(--primary-terracotta); }
 
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* 🔍 BARRE DE RECHERCHE CONTEXTUELLE */
         .search-bar-global { 
-            width: 100%; padding: 16px 24px; border: 1px solid #E5DCD3; border-radius: var(--radius-md); 
-            margin-bottom: 40px; font-size: 15px; background: white; outline: none;
-            transition: var(--transition-fluid); box-shadow: 0 8px 24px rgba(74, 58, 49, 0.02);
+            width: 100%; padding: 14px 20px; border: 1px solid #E5DCD3; border-radius: var(--radius-md); 
+            margin-bottom: 32px; font-size: 14px; background: white; outline: none;
+            box-shadow: 0 4px 15px rgba(74, 58, 49, 0.02);
         }
-        .search-bar-global:focus { 
-            border-color: var(--primary-terracotta); 
-            box-shadow: 0 12px 30px rgba(201, 122, 99, 0.08);
-        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .header h1 { font-family: 'Playfair Display', serif; font-size: 28px; }
         
-        /* 👑 ENTÊTE DE SECTION */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-        .header h1 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; }
-        
-        /* BOUTONS STYLE BOHO CHIC */
         .btn { 
-            background: var(--text-dark); color: white; padding: 12px 24px; border: none; 
-            border-radius: var(--radius-sm); font-weight: 600; font-size: 14px; cursor: pointer; 
-            transition: var(--transition-fluid); display: inline-flex; align-items: center; gap: 8px;
+            background: var(--text-dark); color: white; padding: 12px 22px; border: none; 
+            border-radius: var(--radius-sm); font-weight: 600; font-size: 13px; cursor: pointer; 
+            display: inline-flex; align-items: center; gap: 6px; transition: var(--transition-fluid);
         }
-        .btn:hover { background: #44403A; transform: translateY(-1px); }
         .btn-create { background: var(--primary-terracotta); }
-        .btn-create:hover { background: var(--primary-hover); }
-        
-        /* 🖼️ GRILLE ET CARTES D'ALBUMS EXTENSIBLES */
+
+        /* GRILLE MOBILE & DESKTOP ULTRA ADAPTATIVE */
         .albums-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 28px; 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; 
+        }
+
+        @media (max-width: 650px) {
+            body { padding-top: 85px; padding-left: 14px; padding-right: 14px; }
+            .albums-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 24px; }
         }
         
         .album-card { 
-            position: relative; background: white; padding: 32px; border-radius: var(--radius-lg); 
-            box-shadow: 0 10px 30px rgba(74, 58, 49, 0.02); cursor: pointer; 
+            position: relative; background: white; border-radius: var(--radius-lg); 
+            box-shadow: 0 10px 25px rgba(74, 58, 49, 0.04); cursor: grab; 
             transition: var(--transition-fluid); border: 1px solid rgba(240, 230, 220, 0.6);
             display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;
+            overflow: hidden; background-size: cover; background-position: center;
+            user-select: none;
         }
-        .album-card:hover { 
-            transform: translateY(-4px); box-shadow: 0 20px 40px rgba(74, 58, 49, 0.08); 
-            border-color: rgba(201, 122, 99, 0.15);
-        }
-        
-        /* Bouton de suppression discret au survol */
-        .btn-delete-album { 
-            position: absolute; top: 24px; right: 24px; background: rgba(201, 99, 99, 0.06); 
-            color: #C96363; border: none; border-radius: 50%; width: 28px; height: 28px; 
-            cursor: pointer; font-weight: bold; z-index: 10; font-size: 11px;
-            display: flex; align-items: center; justify-content: center; opacity: 0; transition: var(--transition-fluid);
-        }
-        .album-card:hover .btn-delete-album { opacity: 1; }
-        .btn-delete-album:hover { background: #C96363; color: white; }
-        
-        /* Badges de Visibilité */
-        .badge-status {
-            position: absolute; top: 24px; left: 32px; padding: 4px 12px; 
-            border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
-        }
+        .album-card:active { cursor: grabbing; }
+        .album-card.dragging { opacity: 0.3; transform: scale(0.96); }
 
-        .photo-counter { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
-        .album-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; margin-top: 24px; margin-bottom: 8px; }
-        .album-desc { color: var(--text-light); font-size: 13px; line-height: 1.5; margin-bottom: 24px; flex-grow: 1; }
+        .album-card-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.8) 100%); z-index: 1; }
+        .album-card.has-bg .album-title, .album-card.has-bg .album-desc, .album-card.has-bg .btn-open { color: white !important; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
 
-        /* ACTIONS EN BLOC COMPACT */
-        .actions-group { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #FAF6F0; padding-top: 18px; }
-        .actions-row { display: flex; gap: 6px; width: 100%; }
-        
-        .btn-action-share { 
-            border: none; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 11px; 
-            cursor: pointer; font-weight: 600; transition: var(--transition-fluid);
-            display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-        }
-        
-        /* Variations de boutons utilitaires */
-        .toggle-btn { background: #FCFAF7; color: var(--text-dark); border: 1px solid #E5DCD3; }
-        .toggle-btn:hover { background: #FAF6F0; }
-        .btn-download-zip { background: rgba(201, 122, 99, 0.08); color: var(--primary-terracotta); }
-        .btn-download-zip:hover { background: var(--primary-terracotta); color: white; }
-        .btn-invite { background: #2D2A26; color: white; }
-        .btn-invite:hover { background: #44403A; }
-        
-        .copy-btn { background: rgba(141, 161, 145, 0.1); color: var(--secondary-sage); }
-        .copy-btn:hover { background: var(--secondary-sage); color: white; }
-        .qr-btn { background: #F3EAF5; color: #9C27B0; }
-        .pin-btn { background: #FFF4E5; color: #E65100; }
+        .album-card-content { position: relative; z-index: 2; padding: 24px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
 
-        .btn-open { 
-            text-align: center; font-size: 12px; font-weight: 600; color: var(--text-light);
-            margin-top: 14px; transition: var(--transition-fluid); letter-spacing: 0.3px;
+        /* MENU 3 PETITS POINTS */
+        .dots-menu-btn {
+            position: absolute; top: 16px; right: 16px; z-index: 10;
+            background: rgba(255, 255, 255, 0.95); border: none; border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--text-dark); display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12); transition: var(--transition-fluid);
         }
-        .album-card:hover .btn-open { color: var(--primary-terracotta); }
+        .dots-menu-btn:hover { transform: scale(1.08); background: white; }
 
-        /* 🏠 PANNEAU FORMULAIRE DÉROULANT */
-        .form-container { 
-            display: none; background: white; padding: 32px; border-radius: var(--radius-lg); 
-            box-shadow: 0 15px 35px rgba(74, 58, 49, 0.04); margin-bottom: 40px; 
-            border: 1px solid rgba(240, 230, 220, 0.8); animation: fadeIn 0.4s ease;
+        .dropdown-menu {
+            display: none; position: absolute; top: 58px; right: 16px; z-index: 100;
+            background: white; border-radius: var(--radius-sm); box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+            border: 1px solid rgba(0,0,0,0.08); min-width: 210px; overflow: hidden;
         }
-        .form-container h3 { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 18px; }
-        
-        input[type="text"], textarea { 
-            width: 100%; padding: 12px 18px; margin: 8px 0 16px 0; border: 1px solid #E5DCD3; 
-            border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; background: #FCFAF7; outline: none;
-            transition: var(--transition-fluid);
+        .dropdown-menu button {
+            width: 100%; text-align: left; padding: 12px 16px; border: none; background: transparent;
+            font-size: 12.5px; font-weight: 600; color: var(--text-dark); cursor: pointer; border-bottom: 1px solid #FAF6F0;
+            display: flex; align-items: center; gap: 8px;
         }
-        input[type="text"]:focus, textarea:focus { border-color: var(--primary-terracotta); background: white; }
-        textarea { height: 80px; resize: none; }
+        .dropdown-menu button:last-child { border-bottom: none; }
+        .dropdown-menu button:hover { background: var(--bg-boho); color: var(--primary-terracotta); }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .badge-status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; margin-bottom: 10px; width: fit-content; }
+        .album-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 4px; }
+        .photo-counter { font-size: 12px; font-weight: 600; margin-bottom: 8px; opacity: 0.85; }
+        .album-desc { font-size: 12px; line-height: 1.4; opacity: 0.85; margin-bottom: 14px; }
+        .btn-open { text-align: center; font-size: 12px; font-weight: 700; color: var(--primary-terracotta); margin-top: auto; }
     </style>
 </head>
-<body>
 
-<nav class="navbar">
-    <div class="navbar-brand">🌾 Mon SaaS Photo</div>
-    <div class="nav-links">
-        <a href="/dashboard.html">Dashboard</a>
-        <a href="/my-albums.html" class="active">Mes Albums</a>
-        <a href="/editor.html" style="color: #8A65B2;">Studio Retouche</a>
-    </div>
-</nav>
+<script src="/navbar.js"></script>
+
+<body>
 
 <div class="container">
     <input type="text" id="globalAlbumSearch" class="search-bar-global" placeholder="Rechercher un album par son nom...">
@@ -181,252 +121,250 @@
         <button class="btn btn-create" id="toggleFormBtn">✨ Créer un Album</button>
     </div>
 
-    <div class="form-container" id="albumFormContainer">
-        <h3>Nouveau dossier d'album</h3>
-        <form id="createAlbumForm">
-            <input type="text" id="albumTitre" placeholder="Donnez un nom mémorable à cet album..." required>
-            <textarea id="albumDescription" placeholder="Une courte histoire ou note contextuelle (optionnelle)..."></textarea>
-            <button type="submit" class="btn" style="background: var(--secondary-sage);">Enregistrer la collection</button>
-        </form>
-    </div>
+    <!-- Input d'upload caché pour modifier le fond -->
+    <input type="file" id="bgFileInput" accept="image/*" style="display: none;">
 
     <div class="albums-grid" id="albumsGrid"></div>
 </div>
 
 <script>
-    // --- CONSERVATION DE LA LOGIQUE SECURE ET ROUTAGE ---
     const token = localStorage.getItem('monBadgePhoto');
     if (!token) window.location.replace('/index.html');
 
     let listeCompleteAlbums = [];
-
-    const toggleFormBtn = document.getElementById('toggleFormBtn');
-    const albumFormContainer = document.getElementById('albumFormContainer');
-    toggleFormBtn.addEventListener('click', () => { 
-        albumFormContainer.style.display = albumFormContainer.style.display === 'block' ? 'none' : 'block'; 
-    });
-
-    // Moteur de recherche local instantané
-    document.getElementById('globalAlbumSearch').addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase().trim();
-        const filtres = listeCompleteAlbums.filter(a => a.titre.toLowerCase().includes(query));
-        afficherAlbumsBruts(filtres);
-    });
+    let albumTargetForBg = null;
+    let draggedCard = null;
+    const bgFileInput = document.getElementById('bgFileInput');
 
     window.addEventListener('DOMContentLoaded', async () => {
         await chargerMesAlbums();
-        await chargerAlbumsPartages();
+        document.addEventListener('click', () => document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none'));
     });
 
     async function chargerMesAlbums() {
         try {
             const response = await fetch('/api/albums/my-albums', { headers: { 'Authorization': `Bearer ${token}` } });
-            listeCompleteAlbums = await response.json();
-            afficherAlbumsBruts(listeCompleteAlbums);
+            const tousLesAlbums = await response.json();
+            listeCompleteAlbums = tousLesAlbums.filter(album => !album.parentAlbum);
+            await afficherAlbumsBruts(listeCompleteAlbums);
         } catch (error) { console.error(error); }
     }
 
-    // GÉNÉRATEUR DE CARTES D'ALBUMS (COMPATIBLE AVEC TOUTES TES FONCTIONS CLICS)
-    function afficherAlbumsBruts(albums) {
+    async function afficherAlbumsBruts(albums) {
         const grid = document.getElementById('albumsGrid');
         grid.innerHTML = '';
-        if (albums.length === 0) {
-            grid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-light); font-style: italic;'>Aucune collection trouvée.</p>";
-            return;
-        }
-        
-        albums.forEach(async (album) => {
+
+        for (const album of albums) {
             const card = document.createElement('div');
             card.className = 'album-card';
+            card.draggable = true; // Activer le glisser-déposer
             card.id = `album-${album._id}`;
             
             const estPublic = album.statut === "public";
-            const badgeColor = estPublic ? "rgba(141, 161, 145, 0.15)" : "rgba(201, 122, 99, 0.15)";
-            const textColor = estPublic ? "var(--secondary-sage)" : "var(--primary-terracotta)";
-            const badgeTexte = estPublic ? "🌐 Public" : "🔒 Privé";
+            let bgImage = album.photoCouverture || "";
+            let countPhotos = 0;
+
+            try {
+                const resP = await fetch(`/api/photos/album/${album._id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const photos = await resP.json();
+                countPhotos = photos.length || 0;
+                if (!bgImage && countPhotos > 0) {
+                    bgImage = photos[0].urlImage; 
+                }
+            } catch(e) {}
+
+            if (bgImage) {
+                card.style.backgroundImage = `url('${bgImage}')`;
+                card.classList.add('has-bg');
+            }
 
             card.innerHTML = `
-                <button class="btn-delete-album" title="Supprimer la collection">✕</button>
+                ${bgImage ? '<div class="album-card-overlay"></div>' : ''}
+                <button class="dots-menu-btn">⋮</button>
                 
-                <div class="badge-status" style="background: ${badgeColor}; color: ${textColor};">
-                    ${badgeTexte}
-                </div>
-                
-                <div>
-                    <h3 class="album-title">${album.titre}</h3>
-                    <div class="photo-counter" style="color: ${textColor};">
-                        📸 Analyse du contenu...
-                    </div>
-                    <p class="album-desc">${album.description || 'Aucun récit renseigné pour cette collection.'}</p>
-                </div>
-                
-                <div class="actions-group">
-                    <div class="actions-row">
-                        <button class="btn-action-share toggle-btn" style="flex: 2;">
-                            ${estPublic ? "Rendre Privé" : "Rendre Public"}
-                        </button>
-                        <button class="btn-action-share btn-download-zip" title="Télécharger l'archive complète">📥 ZIP</button>
-                        <button class="btn-action-share btn-invite" title="Inviter des collaborateurs">👥 Espace</button>
-                    </div>
-                    
+                <div class="dropdown-menu">
+                    <button class="btn-change-bg">📸 Modifier le fond (PC)</button>
+                    <button class="btn-toggle-share">${estPublic ? "🔒 Rendre Privé" : "🌐 Rendre Public"}</button>
+                    <button class="btn-zip">📥 Télécharger ZIP</button>
+                    <button class="btn-invite">👥 Inviter collaborateur</button>
                     ${estPublic ? `
-                    <div class="actions-row" style="animation: fadeIn 0.3s ease;">
-                        <button class="btn-action-share copy-btn" style="flex: 1;">🔗 Copier</button>
-                        <button class="btn-action-share qr-btn">📱 QR</button>
-                        <button class="btn-action-share pin-btn">${album.codePIN ? "🔒 Éditer PIN" : "🔑 Créer PIN"}</button>
-                    </div>
+                        <button class="btn-copy-link">🔗 Copier le lien</button>
+                        <button class="btn-qr">📱 QR Code</button>
+                        <button class="btn-pin">${album.codePIN ? "🔒 Modifier/Enlever PIN" : "🔑 Créer PIN"}</button>
                     ` : ''}
-                    
-                    <div class="btn-open">Parcourir la galerie →</div>
+                    <button class="btn-delete" style="color:#C96363;">🗑️ Supprimer</button>
+                </div>
+
+                <div class="album-card-content">
+                    <div>
+                        <div class="badge-status" style="background: ${estPublic ? 'rgba(141, 161, 145, 0.35)' : 'rgba(201, 122, 99, 0.35)'}; color: ${estPublic ? 'var(--secondary-sage)' : 'var(--primary-terracotta)'};">
+                            ${estPublic ? "🌐 Public" : "🔒 Privé"}
+                        </div>
+                        <h3 class="album-title">${album.titre}</h3>
+                        <div class="photo-counter">📸 ${countPhotos} photo${countPhotos > 1 ? 's' : ''}</div>
+                        <p class="album-desc">${album.description || 'Aucun récit renseigné.'}</p>
+                    </div>
+                    <div class="btn-open">Parcourir la galerie ➔</div>
                 </div>
             `;
             
             grid.appendChild(card);
 
-            // Redirection globale vers la galerie au clic sur la carte
-            card.addEventListener('click', () => {
+            // Redirection
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.dots-menu-btn') || e.target.closest('.dropdown-menu')) return;
                 localStorage.setItem('currentAlbumId', album._id);
-                window.location.href = '/gallery.html'; 
+                window.location.href = `/gallery.html?id=${album._id}`; 
             });
 
-            // --- PROTECTIONS ET ACTIONS DES BOUTONS IMBRIQUÉS (stopPropagation) ---
-            card.querySelector('.btn-delete-album').addEventListener('click', async (e) => {
+            // Menu 3 petits points
+            const dotsBtn = card.querySelector('.dots-menu-btn');
+            const menu = card.querySelector('.dropdown-menu');
+
+            dotsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if(confirm("Supprimer définitivement cet album ainsi que toutes ses données ?")) {
-                    await fetch(`/api/albums/${album._id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                    window.location.reload();
-                }
+                document.querySelectorAll('.dropdown-menu').forEach(m => { if(m !== menu) m.style.display = 'none'; });
+                menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
             });
 
-            card.querySelector('.toggle-btn').addEventListener('click', async (e) => {
+            // Action : Modifier Fond PC
+            card.querySelector('.btn-change-bg').addEventListener('click', (e) => {
+                e.stopPropagation(); menu.style.display = 'none';
+                albumTargetForBg = album._id;
+                bgFileInput.click();
+            });
+
+            // Action : Privé / Public
+            card.querySelector('.btn-toggle-share').addEventListener('click', async (e) => {
                 e.stopPropagation();
                 await fetch(`/api/albums/${album._id}/toggle-share`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
                 window.location.reload();
             });
 
-            // Logique ZIP asynchrone sécurisée
-            card.querySelector('.btn-download-zip').addEventListener('click', async (e) => {
+            // Action : ZIP
+            card.querySelector('.btn-zip').addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const btn = e.target; const txt = btn.innerText; btn.innerText = "⏳"; btn.disabled = true;
-                try {
-                    const resPhotos = await fetch(`/api/photos/album/${album._id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-                    const photos = await resPhotos.json();
-                    if(photos.length === 0) { alert("⚠️ Cet album ne contient aucun fichier."); btn.innerText = txt; btn.disabled = false; return; }
-                    
-                    const zip = new JSZip();
-                    for (let i = 0; i < photos.length; i++) {
-                        const response = await fetch(photos[i].urlImage);
-                        const blob = await response.blob();
-                        zip.file(photos[i].titre ? `${photos[i].titre}.jpg` : `photo_${i+1}.jpg`, blob);
-                    }
-                    const content = await zip.generateAsync({ type: "blob" });
-                    const urlZip = window.URL.createObjectURL(content);
-                    const a = document.createElement('a'); a.href = urlZip; a.download = `${album.titre.replace(/\s+/g, '_')}_archive.zip`;
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                } catch (error) { alert("Erreur d'écriture de l'archive compressée."); }
-                btn.innerText = txt; btn.disabled = false;
+                const resPhotos = await fetch(`/api/photos/album/${album._id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const photos = await resPhotos.json();
+                if(photos.length === 0) return alert("⚠️ Album vide.");
+                const zip = new JSZip();
+                for (let i = 0; i < photos.length; i++) {
+                    const response = await fetch(photos[i].urlImage);
+                    const blob = await response.blob();
+                    zip.file(`photo_${i+1}.jpg`, blob);
+                }
+                const content = await zip.generateAsync({ type: "blob" });
+                const urlZip = window.URL.createObjectURL(content);
+                const a = document.createElement('a'); a.href = urlZip; a.download = `${album.titre}_archive.zip`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
             });
 
-            // Ajout de membres collaboratifs (Espace Drive)
+            // Action : Inviter
             card.querySelector('.btn-invite').addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const email = prompt("Saisissez l'adresse e-mail de votre collaborateur :");
+                const email = prompt("Email du collaborateur :");
                 if(!email) return;
                 const res = await fetch(`/api/albums/${album._id}/invite`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ emailInvite: email })
                 });
-                const data = await res.json();
-                alert(data.message);
+                const data = await res.json(); alert(data.message);
             });
 
-            // Actions conditionnelles liées au statut Public
+            // Actions Publics (CORRECTION ROUTE EXACTE VIEW-SHARE.HTML)
             if (estPublic) {
                 const lienPublic = `${window.location.origin}/view-share.html?code=${album.codePartage}`;
-                card.querySelector('.copy-btn').addEventListener('click', (e) => { 
-                    e.stopPropagation(); navigator.clipboard.writeText(lienPublic); alert("📋 Lien d'accès copié dans votre presse-papiers !"); 
+                
+                card.querySelector('.btn-copy-link').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(lienPublic);
+                    alert("📋 Lien d'accès copié dans votre presse-papiers !");
                 });
-                card.querySelector('.qr-btn').addEventListener('click', (e) => { 
-                    e.stopPropagation(); 
-                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(lienPublic)}`; 
-                    const w = window.open("", "_blank", "width=320,height=380"); 
-                    w.document.write(`<div style="text-align:center;font-family:sans-serif;padding:32px;background:#FAF6F0;height:100vh;box-sizing:border-box;"><h4 style="color:#2D2A26;margin-bottom:16px;">Scanner le QR Code</h4><img src="${qrUrl}" style="max-width:180px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.05);"><br><button onclick="window.close()" style="margin-top:24px;padding:8px 16px;background:#2D2A26;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;">Fermer</button></div>`); 
+
+                card.querySelector('.btn-qr').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(lienPublic)}`;
+                    const w = window.open("", "_blank", "width=320,height=380");
+                    w.document.write(`<div style="text-align:center;padding:24px;font-family:sans-serif;background:#FAF6F0;height:100vh;box-sizing:border-box;"><h4 style="color:#2D2A26;margin-bottom:16px;">Scanner le QR Code</h4><img src="${qrUrl}" style="max-width:180px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.05);"><br><button onclick="window.close()" style="margin-top:24px;padding:8px 16px;background:#2D2A26;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;">Fermer</button></div>`);
                 });
-                card.querySelector('.pin-btn').addEventListener('click', async (e) => { 
-                    e.stopPropagation(); 
-                    const nvoPIN = prompt("Définir un code de verrouillage à 4 chiffres :", album.codePIN || ""); 
-                    if (nvoPIN === null) return; 
-                    await fetch(`/api/albums/${album._id}/set-pin`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ pin: nvoPIN }) }); 
-                    window.location.reload(); 
+
+                card.querySelector('.btn-pin').addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const promptMsg = album.codePIN 
+                        ? `PIN actuel : ${album.codePIN}\nEntrez le nouveau PIN à 4 chiffres (ou Laissez VIDE pour supprimer le PIN) :`
+                        : `Définir un code PIN à 4 chiffres (ex: 1234) :`;
+
+                    const pin = prompt(promptMsg, album.codePIN || "");
+                    if (pin === null) return; // Annulation
+
+                    await fetch(`/api/albums/${album._id}/set-pin`, { 
+                        method: 'PUT', 
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
+                        body: JSON.stringify({ pin: pin.trim() }) 
+                    });
+                    
+                    if (pin.trim() === "") {
+                        alert("🔓 Code PIN supprimé ! L'album est accessible librement.");
+                    } else {
+                        alert("🔒 Code PIN enregistré avec succès !");
+                    }
+                    window.location.reload();
                 });
             }
 
-            // Chargement fluide et différé du compteur de fichiers
-            try {
-                const resPhotosCount = await fetch(`/api/photos/album/${album._id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (resPhotosCount.ok) {
-                    const photosCount = await resPhotosCount.json();
-                    const nb = photosCount.length || 0;
-                    card.querySelector('.photo-counter').innerText = `✨ ${nb} cliché${nb > 1 ? 's' : ''} indexé${nb > 1 ? 's' : ''}`;
+            // Action : Supprimer
+            card.querySelector('.btn-delete').addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if(confirm("Supprimer définitivement cet album ?")) {
+                    await fetch(`/api/albums/${album._id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                    window.location.reload();
                 }
-            } catch (err) { card.querySelector('.photo-counter').innerText = `✨ 0 cliché`; }
-        });
+            });
+
+            // 🔀 GLISSER - DÉPOSER (DRAG & DROP)
+            card.addEventListener('dragstart', () => {
+                draggedCard = card;
+                card.classList.add('dragging');
+            });
+
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+                draggedCard = null;
+            });
+
+            card.addEventListener('dragover', (e) => e.preventDefault());
+
+            card.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedCard && draggedCard !== card) {
+                    const allCards = Array.from(grid.children);
+                    const draggedIndex = allCards.indexOf(draggedCard);
+                    const targetIndex = allCards.indexOf(card);
+                    if (draggedIndex < targetIndex) {
+                        grid.insertBefore(draggedCard, card.nextSibling);
+                    } else {
+                        grid.insertBefore(draggedCard, card);
+                    }
+                }
+            });
+        }
     }
 
-    // INTERFACE DRIVE COLLABORATIVE (ALBUMS REÇUS)
-    async function chargerAlbumsPartages() {
-        const container = document.querySelector('.container');
-        const blockPartage = document.createElement('div');
-        blockPartage.innerHTML = `
-            <h1 style="margin-top:60px; border-top:1px solid #E5DCD3; padding-top:40px; font-family: 'Playfair Display', serif; font-size:28px; margin-bottom:24px;">
-                📥 Epaules partagées (Espaces invités)
-            </h1>
-            <div class="albums-grid" id="sharedAlbumsGrid"></div>
-        `;
-        container.appendChild(blockPartage);
-        const sharedGrid = document.getElementById('sharedAlbumsGrid');
+    // UPLOAD FOND PC
+    bgFileInput.addEventListener('change', async (e) => {
+        if (!e.target.files || e.target.files.length === 0 || !albumTargetForBg) return;
+        const formData = new FormData();
+        formData.append('image', e.target.files[0]);
 
         try {
-            const response = await fetch('/api/albums/shared-with-me', { headers: { 'Authorization': `Bearer ${token}` } });
-            const albumsShared = await response.json();
-            if (albumsShared.length === 0) {
-                sharedGrid.innerHTML = "<p style='grid-column: 1/-1; color: var(--text-light); font-style:italic;'>Aucun espace partagé n'a été rattaché à votre compte pour le moment.</p>";
-                return;
-            }
-            albumsShared.forEach(album => {
-                const card = document.createElement('div');
-                card.className = 'album-card';
-                card.innerHTML = `
-                    <div class="badge-status" style="background: rgba(141, 161, 145, 0.15); color: var(--secondary-sage);">
-                        📥 Propriétaire : ${album.createur.email.split('@')[0]}
-                    </div>
-                    <h3 class="album-title">${album.titre}</h3>
-                    <p class="album-desc">${album.description || 'Espace collaboratif sans note descriptive.'}</p>
-                    <div class="btn-open" style="margin-top:auto;">Rejoindre le dossier partagé →</div>
-                `;
-                card.addEventListener('click', () => {
-                    localStorage.setItem('currentAlbumId', album._id);
-                    window.location.href = '/gallery.html'; 
-                });
-                sharedGrid.appendChild(card);
+            const res = await fetch(`/api/albums/${albumTargetForBg}/cover-upload`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
             });
-        } catch (error) { console.error(error); }
-    }
-
-    // FORMULAIRE DE CRÉATION DE DOSSIER
-    document.getElementById('createAlbumForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const titre = document.getElementById('albumTitre').value;
-        const description = document.getElementById('albumDescription').value;
-        try {
-            const response = await fetch('/api/albums/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ titre, description })
-            });
-            if (response.ok) window.location.reload();
-        } catch (error) { console.error(error); }
+            if (res.ok) window.location.reload();
+        } catch(err) { alert("Erreur réseau."); }
     });
 </script>
 </body>

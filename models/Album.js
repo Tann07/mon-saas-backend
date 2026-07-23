@@ -1,18 +1,26 @@
 const mongoose = require('mongoose');
 
+// On efface l'ancien modèle en mémoire s'il existe déjà
+if (mongoose.models.Album) {
+    delete mongoose.models.Album;
+}
+
 const albumSchema = new mongoose.Schema({
     titre: { type: String, required: true },
     description: { type: String },
     createur: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    // 🌐 Sécurité & Partage
-    statut: { type: String, default: "prive" }, // "prive" ou "public"
-    codePartage: { type: String, unique: true, sparse: true }, // Identifiant unique pour le lien de partage
-    // 🔐 Code de sécurité optionnel pour les invités
-    codePIN: { type: String, default: "" }, // Si vide = pas de mot de passe, si rempli = accès verrouillé
-    // 🎨 Personnalisation visuelle
-    photoCouverture: { type: String, default: "" }, // Contiendra l'URL de l'image de couverture
-    // 👥协作 / Mode Drive : Liste des utilisateurs invités à consulter cet album
-    accesAutorises: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
-});
+    
+    // 📁 Champ indispensable pour l'arborescence
+    parentAlbum: { type: mongoose.Schema.Types.ObjectId, ref: 'Album', default: null },
 
-module.exports = mongoose.models.Album || mongoose.model('Album', albumSchema);
+    // 🌐 Sécurité & Partage
+    statut: { type: String, default: "prive" },
+    codePartage: { type: String, unique: true, sparse: true },
+    codePIN: { type: String, default: "" },
+    
+    // 🎨 Visuel & Collaboration
+    photoCouverture: { type: String, default: "" },
+    accesAutorises: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+}, { timestamps: true });
+
+module.exports = mongoose.model('Album', albumSchema);

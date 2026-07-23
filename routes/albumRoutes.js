@@ -3,19 +3,57 @@ const router = express.Router();
 const Album = require('../models/Album');
 const auth = require('../middleware/auth');
 const Photo = require('../models/Photo');
+const multer = require('../middleware/multer-config'); // 👈 Ajout pour le téléversement d'image
 const fs = require('fs'); 
 const path = require('path'); 
 const crypto = require('crypto');
-const User = require('../models/User'); 
 
-// 1. ROUTE POUR CRÉER UN ALBUM (Protégée)
+// Fonction helper pour construire le Fil d'Ariane
+async function getAlbumHierarchy(albumId, userId) {
+    let breadcrumb = [];
+    let currId = albumId;
+    while (currId) {
+        const album = await Album.findOne({ _id: currId, createur: userId });
+        if (!album) break;
+        breadcrumb.unshift({ _id: album._id, titre: album.titre });
+        currId = album.parentAlbum;
+    }
+    return breadcrumb;
+}
+
+// 📊 0. STATISTIQUES POUR LE DASHBOARD
+router.get('/stats', auth, async (req, res) => {
+    try {
+        const userId = req.auth.userId;
+        const nombreAlbums = await Album.countDocuments({ createur: userId });
+        const mesAlbums = await Album.find({ createur: userId });
+        const albumIds = mesAlbums.map(album => album._id);
+
+        const nombrePhotos = await Photo.countDocuments({ album: { $in: albumIds } });
+        const stockageUtiliseMo = parseFloat((nombrePhotos * 2.5).toFixed(1)); 
+        const limiteStockageMo = 15000;
+
+        res.status(200).json({
+            albums: nombreAlbums,
+            photos: nombrePhotos,
+            stockageUtilise: stockageUtiliseMo,
+            stockageLimite: limiteStockageMo
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur calcul stats", error: error.message });
+    }
+});
+
+// 1. CRÉER UN ALBUM OU UN SOUS-ALBUM
 router.post('/create', auth, async (req, res) => {
     try {
-        const { titre, description } = req.body;
+        const { titre, description, parentAlbum } = req.body;
+        const parentId = (parentAlbum && parentAlbum !== "null" && parentAlbum !== "undefined" && parentAlbum.trim() !== "") ? parentAlbum : null;
 
         const nouvelAlbum = new Album({
             titre,
             description,
+            parentAlbum: parentId,
             createur: req.auth.userId
         });
 
@@ -26,125 +64,102 @@ router.post('/create', auth, async (req, res) => {
     }
 });
 
-// 2. ROUTE POUR RÉCUPÉRER LES ALBUMS DE L'UTILISATEUR CONNECTÉ
+// 2. RÉCUPÉRER UNIQUEMENT LES ALBUMS RACINES (Mes Albums)
 router.get('/my-albums', auth, async (req, res) => {
     try {
         const userId = req.auth.userId;
-        const albums = await Album.find({ createur: userId }).sort({ updatedAt: -1 });
+        const albums = await Album.find({ 
+            createur: userId, 
+            $or: [{ parentAlbum: null }, { parentAlbum: { $exists: false } }] 
+        }).sort({ updatedAt: -1 });
+        
         res.status(200).json(albums);
     } catch (error) {
-        console.error("Erreur sur /my-albums :", error);
         res.status(500).json({ message: "Erreur lors de la récupération des albums" });
     }
 });
 
-// 🔗 3. GENERATION DE LIEN DE PARTAGE DYNAMIQUE (Fix IP/Localhost)
-router.post('/:id/share', auth, async (req, res) => {
-    try {
-        const album = await Album.findOne({ _id: req.params.id, createur: req.auth.userId });
-        if (!album) return res.status(404).json({ message: "Album introuvable ou accès refusé." });
-
-        if (!album.codePartage) {
-            album.codePartage = crypto.randomBytes(8).toString('hex');
-            album.statut = "public";
-            await album.save();
-        }
-
-        // On extrait l'hôte exact de la requête (IP locale ou domaine Prod)
-        const host = req.get('host');
-        const protocol = req.protocol;
-        const shareUrl = `${protocol}://${host}/client-gallery.html?code=${album.codePartage}`;
-
-        res.status(200).json({ 
-            message: "Lien de partage généré avec succès !", 
-            shareUrl,
-            codePartage: album.codePartage 
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la génération du lien de partage", error: error.message });
-    }
-});
-
-// 🌐 4. ACCÈS PUBLIC A UN ALBUM PARTAGÉ (Pour Mobile & Client Web sans Auth)
-router.get('/shared/:code', async (req, res) => {
-    try {
-        const album = await Album.findOne({ codePartage: req.params.code });
-        if (!album) return res.status(404).json({ message: "Cet album est privé ou n'existe pas." });
-
-        const photos = await Photo.find({ album: album._id }).sort({ _id: -1 });
-
-        res.status(200).json({
-            album: {
-                _id: album._id,
-                titre: album.titre,
-                description: album.description,
-                urlCouverture: album.urlCouverture
-            },
-            photos
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Erreur récupération album partagé", error: error.message });
-    }
-});
-
-// 📈 5. STATISTIQUES DU TABLEAU DE BORD
-router.get('/stats', auth, async (req, res) => {
-    try {
-        const userId = req.auth.userId;
-        const nombreAlbums = await Album.countDocuments({ createur: userId });
-        const mesAlbums = await Album.find({ createur: userId });
-        const albumIds = mesAlbums.map(album => album._id);
-
-        const nombrePhotos = await Photo.countDocuments({ album: { $in: albumIds } });
-        const stockageUtiliseMo = nombrePhotos * 2.5; 
-        const limiteStockageMo = 15000; // Pack Gratuit 15 Go
-
-        res.status(200).json({
-            albums: nombreAlbums,
-            photos: nombrePhotos,
-            stockageUtilise: stockageUtiliseMo,
-            stockageLimite: limiteStockageMo
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Erreur lors du calcul des stats", error: error.message });
-    }
-});
-
-// 🗑️ 6. SUPPRESSION D'UN ALBUM (CASCADE)
-router.delete('/:id', auth, async (req, res) => {
+// 3. RÉCUPÉRER LE CONTENU UNIFIÉ (Album, Fil d'Ariane, Sous-albums & Photos récentes en haut)
+router.get('/:id/content', auth, async (req, res) => {
     try {
         const albumId = req.params.id;
-        const album = await Album.findOne({ _id: albumId, createur: req.auth.userId });
-        if (!album) {
-            return res.status(404).json({ message: "Album introuvable ou vous n'avez pas les droits." });
-        }
+        const userId = req.auth.userId;
 
-        const photos = await Photo.find({ album: albumId });
+        const currentAlbum = await Album.findOne({ _id: albumId, createur: userId });
+        if (!currentAlbum) return res.status(404).json({ message: "Album introuvable" });
 
-        photos.forEach(photo => {
-            const nomFichier = photo.urlImage.split('/uploads/')[1];
-            if (nomFichier) {
-                const cheminFichier = path.join(__dirname, '../uploads', nomFichier);
-                fs.unlink(cheminFichier, (err) => {
-                    if (err) console.log("⚠️ Fichier physique déjà supprimé :", nomFichier);
-                });
-            }
+        const subAlbums = await Album.find({ parentAlbum: albumId, createur: userId }).sort({ updatedAt: -1 });
+        
+        // 🌟 Les photos les plus récentes s'affichent TOUT EN HAUT (_id: -1)
+        const photos = await Photo.find({ album: albumId }).sort({ _id: -1 });
+
+        // 🗺️ Arborescence complète
+        const breadcrumb = await getAlbumHierarchy(albumId, userId);
+
+        res.status(200).json({
+            album: currentAlbum,
+            subAlbums,
+            photos,
+            breadcrumb
         });
-
-        await Photo.deleteMany({ album: albumId });
-        await Album.findByIdAndDelete(albumId);
-
-        res.status(200).json({ message: "L'album et toutes ses photos ont été définitivement supprimés !" });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la suppression de l'album", error: error.message });
+        res.status(500).json({ message: "Erreur chargement contenu album", error: error.message });
     }
 });
 
-// 🔒 7. BASCULER LE STATUT PRIVÉ / PUBLIC
+// 4. RÉCUPÉRER LES SOUS-ALBUMS D'UN ALBUM
+router.get('/:id/subalbums', auth, async (req, res) => {
+    try {
+        const parentId = req.params.id;
+        const userId = req.auth.userId;
+        const subAlbums = await Album.find({ createur: userId, parentAlbum: parentId }).sort({ updatedAt: -1 });
+        res.status(200).json(subAlbums);
+    } catch (error) {
+        res.status(500).json({ message: "Erreur sous-albums", error: error.message });
+    }
+});
+
+// 5. CHANGER LA PHOTO DE COUVERTURE / FOND VIA URL
+router.put('/:id/cover', auth, async (req, res) => {
+    try {
+        const { urlImage } = req.body;
+        const album = await Album.findOne({ _id: req.params.id, createur: req.auth.userId });
+        if (!album) return res.status(404).json({ message: "Album introuvable" });
+
+        album.photoCouverture = urlImage;
+        await album.save();
+        res.status(200).json({ message: "Image de fond mise à jour !", photoCouverture: album.photoCouverture });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur mise à jour fond", error: error.message });
+    }
+});
+
+// 📸 5b. CHANGER LA PHOTO DE COUVERTURE VIA UN FICHIER DEPUIS L'ORDINATEUR
+router.put('/:id/cover-upload', auth, multer, async (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "Aucun fichier envoyé" });
+        }
+        const file = req.files[0];
+        const urlMedia = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+
+        const album = await Album.findOne({ _id: req.params.id, createur: req.auth.userId });
+        if (!album) return res.status(404).json({ message: "Album introuvable" });
+
+        album.photoCouverture = urlMedia;
+        await album.save();
+
+        res.status(200).json({ message: "Fond mis à jour avec succès !", photoCouverture: urlMedia });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors du changement de fond", error: error.message });
+    }
+});
+
+// 6. BASCULER PRIVÉ / PUBLIC
 router.put('/:id/toggle-share', auth, async (req, res) => {
     try {
         const album = await Album.findOne({ _id: req.params.id, createur: req.auth.userId });
-        if (!album) return res.status(404).json({ message: "Album introuvable ou accès refusé." });
+        if (!album) return res.status(404).json({ message: "Album introuvable." });
 
         album.statut = album.statut === "prive" ? "public" : "prive";
         if (album.statut === "public" && !album.codePartage) {
@@ -152,45 +167,33 @@ router.put('/:id/toggle-share', auth, async (req, res) => {
         }
 
         await album.save();
-        res.status(200).json({ 
-            message: `Album passé en mode ${album.statut} !`, 
-            statut: album.statut,
-            codePartage: album.codePartage 
-        });
+        res.status(200).json({ message: `Album passé en mode ${album.statut} !`, statut: album.statut, codePartage: album.codePartage });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors du changement de statut", error: error.message });
+        res.status(500).json({ message: "Erreur changement de statut", error: error.message });
     }
 });
 
-// 📝 8. MODIFIER TITRE ET DESCRIPTION
-router.put('/:id', auth, async (req, res) => {
+// 7. SUPPRESSION D'UN ALBUM
+router.delete('/:id', auth, async (req, res) => {
     try {
-        const { titre, description } = req.body;
-        const album = await Album.findOne({ _id: req.params.id, createur: req.auth.userId });
+        const albumId = req.params.id;
+        const album = await Album.findOne({ _id: albumId, createur: req.auth.userId });
         if (!album) return res.status(404).json({ message: "Album introuvable." });
 
-        if (titre) album.titre = titre;
-        if (description !== undefined) album.description = description;
+        const photos = await Photo.find({ album: albumId });
+        photos.forEach(photo => {
+            const nomFichier = photo.urlImage.split('/uploads/')[1];
+            if (nomFichier) {
+                const cheminFichier = path.join(__dirname, '../uploads', nomFichier);
+                fs.unlink(cheminFichier, () => {});
+            }
+        });
 
-        await album.save();
-        res.status(200).json({ message: "Album mis à jour avec succès !", album });
+        await Photo.deleteMany({ album: albumId });
+        await Album.findByIdAndDelete(albumId);
+        res.status(200).json({ message: "Album supprimé avec succès !" });
     } catch (error) {
-        res.status(500).json({ message: "Erreur modification album", error: error.message });
-    }
-});
-
-// 🖼️ 9. MODIFIER COUVERTURE
-router.put('/:id/cover', auth, async (req, res) => {
-    try {
-        const { urlImage } = req.body;
-        const album = await Album.findOne({ _id: req.params.id, createur: req.auth.userId });
-        if (!album) return res.status(404).json({ message: "Album introuvable" });
-
-        album.urlCouverture = urlImage;
-        await album.save();
-        res.status(200).json({ message: "Couverture mise à jour !" });
-    } catch (error) {
-        res.status(500).json({ message: "Erreur couverture", error: error.message });
+        res.status(500).json({ message: "Erreur suppression album", error: error.message });
     }
 });
 
