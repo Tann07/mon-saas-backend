@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script>
+        (function() {
+            const token = localStorage.getItem('monBadgePhoto');
+            if (!token) {
+                window.location.replace('/index.html');
+            }
+        })();
+    </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Centre de Contrôle — Mon SaaS Média</title>
@@ -31,40 +40,13 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: var(--bg-boho); 
             color: var(--text-dark); 
-            padding: 120px 24px 60px 24px; 
+            padding: 100px 24px 60px 24px; 
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 🧭 NAV BAR FLOTTANTE */
-        .navbar { 
-            position: fixed; top: 0; left: 0; right: 0; height: 80px; 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 40px; 
-            border-bottom: 1px solid rgba(201, 122, 99, 0.06); 
-            z-index: 1000; 
-            box-sizing: border-box;
-        }
-        .navbar-brand { 
-            font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; letter-spacing: -0.3px;
-        }
-        .nav-links { display: flex; align-items: center; gap: 8px; }
-        .nav-links a { 
-            color: var(--text-light); text-decoration: none; font-weight: 600; font-size: 14px; 
-            padding: 10px 16px; border-radius: var(--radius-sm); transition: var(--transition-smooth);
-        }
-        .nav-links a:hover { color: var(--text-dark); background: rgba(118, 110, 101, 0.05); }
-        
-        .nav-links a.active-link { color: var(--primary-terracotta); background: rgba(201, 122, 99, 0.06); }
-        .nav-links a.studio-link { color: #8A65B2; background: rgba(138, 101, 178, 0.06); }
-        .nav-links a.studio-link:hover { background: rgba(138, 101, 178, 0.12); }
-        #logoutBtn { color: #C96363; }
-        #logoutBtn:hover { background: rgba(201, 99, 99, 0.06); }
+        .container { max-width: 1240px; margin: 0 auto; }
 
-        .container { max-width: 1140px; margin: 0 auto; }
-        
         /* 🏠 PANNEAU DE BIENVENUE */
         .welcome-panel { 
             background: white; padding: 45px; border-radius: var(--radius-lg); 
@@ -143,7 +125,7 @@
             padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
         }
 
-        /* GRILLE DE MÉDIAS DYNAMIQUES (PHOTOS & VIDÉOS) */
+        /* GRILLE DE MÉDIAS DYNAMIQUES */
         .photos-stream-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px;
         }
@@ -194,18 +176,10 @@
         }
     </style>
 </head>
-<body>
 
-<nav class="navbar">
-    <div class="navbar-brand">🌾 Mon SaaS Média</div>
-    <div class="nav-links">
-        <a href="/dashboard.html" class="active-link">Dashboard</a>
-        <a href="/my-albums.html">Mes Albums</a>
-        <a href="/editor.html" class="studio-link">Studio Retouche</a>
-        <a href="/profile.html">Mon Compte</a>
-        <a href="#" id="logoutBtn">Déconnexion</a>
-    </div>
-</nav>
+<script src="/navbar.js"></script>
+
+<body>
 
 <div class="container">
 
@@ -271,14 +245,10 @@
     const token = localStorage.getItem('monBadgePhoto');
     if (!token) window.location.replace('/index.html');
 
+    // Navigation cartes stats
     document.getElementById('btnStatsAlbums').addEventListener('click', () => { window.location.href = '/my-albums.html'; });
     document.getElementById('btnStatsPhotos').addEventListener('click', () => { window.location.href = '/all-photos.html'; });
     document.getElementById('btnStatsStockage').addEventListener('click', () => { window.location.href = '/stats.html'; });
-
-    document.getElementById('logoutBtn').addEventListener('click', () => { 
-        localStorage.clear(); 
-        window.location.replace('/index.html'); 
-    });
 
     function copierLegende(texte) {
         navigator.clipboard.writeText(texte).then(() => {
@@ -290,16 +260,21 @@
         // 1. Récupération des Statistiques
         try {
             const response = await fetch('/api/albums/stats', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error(`Code HTTP ${response.status}`);
+
             const stats = await response.json();
             
-            document.getElementById('statAlbums').innerText = stats.albums;
-            document.getElementById('statPhotos').innerText = stats.photos;
+            document.getElementById('statAlbums').innerText = stats.albums ?? 0;
+            document.getElementById('statPhotos').innerText = stats.photos ?? 0;
             
-            const limiteEnGo = stats.stockageLimite >= 1024 ? (stats.stockageLimite / 1024).toFixed(0) : stats.stockageLimite;
-            document.getElementById('statStockageText').innerText = `${stats.stockageUtilise} Mo / ${limiteEnGo} Go`;
+            const stockageMo = stats.stockageUtilise ?? 0;
+            const limiteMo = stats.stockageLimite ?? 15000;
+            const limiteEnGo = limiteMo >= 1024 ? (limiteMo / 1024).toFixed(0) : limiteMo;
+
+            document.getElementById('statStockageText').innerText = `${stockageMo} Mo / ${limiteEnGo} Go`;
             
             setTimeout(() => {
-                const pourcentage = Math.min((stats.stockageUtilise / stats.stockageLimite) * 100, 100);
+                const pourcentage = Math.min((stockageMo / limiteMo) * 100, 100);
                 document.getElementById('statStockageBarre').style.width = `${pourcentage}%`;
             }, 100);
 
@@ -307,7 +282,7 @@
             console.error("Erreur stats :", error); 
         }
 
-        // 2. Récupération des 4 Derniers Médias (Photos & Vidéos)
+        // 2. Récupération des 4 Derniers Médias
         try {
             const resPhotos = await fetch('/api/photos/my-photos', { 
                 headers: { 'Authorization': `Bearer ${token}` } 

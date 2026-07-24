@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script>
+        (function() {
+            const token = localStorage.getItem('monBadgePhoto');
+            if (!token) {
+                window.location.replace('/index.html');
+            }
+        })();
+    </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pellicule Globale — Mon SaaS Média</title>
@@ -210,7 +219,14 @@
     let listePhotosEnCours = [];
     let modeAffichage = 'small'; 
 
-    document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.replace('/index.html'); });
+    // Gestion du bouton déconnexion sécurisée si présent dans le DOM
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => { 
+            localStorage.clear(); 
+            window.location.replace('/index.html'); 
+        });
+    }
 
     const btnSmall = document.getElementById('btnViewSmall');
     const btnLarge = document.getElementById('btnViewLarge');
@@ -237,7 +253,7 @@
 
     async function chargerPellicule() {
         try {
-            const response = await fetch('/api/photos/my-photos', { 
+            const response = await fetch('/api/photos/all', { 
                 headers: { 'Authorization': `Bearer ${token}` } 
             });
             if (!response.ok) throw new Error(`Code erreur ${response.status}`);
@@ -269,9 +285,10 @@
             
             if (estVideo) {
                 card.innerHTML = `
-                    <div class="badge-video">🎬 VIDÉO</div>
-                    <div class="play-overlay">▶</div>
-                    <video src="${url}#t=0.5" preload="metadata" muted playsinline></video>
+                    <div class="play-overlay" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.2);">
+                        <div style="width:40px; height:40px; background:rgba(255,255,255,0.85); border-radius:50%; display:flex; align-items:center; justify-content:center; padding-left:2px; font-size:16px;">▶️</div>
+                    </div>
+                    <video src="${url}#t=0.5" preload="metadata" muted playsinline style="width:100%; height:100%; object-fit:cover;"></video>
                     <button class="btn-delete">✕ Supprimer</button>
                 `;
             } else {
@@ -322,11 +339,9 @@
             vid.controls = true;
             vid.autoplay = true;
             vid.playsInline = true;
-            vid.innerHTML = `
-                <source src="${url}" type="video/mp4">
-                <source src="${url}" type="video/quicktime">
-                Votre navigateur ne prend pas en charge la vidéo.
-            `;
+            vid.style.maxWidth = '100%';
+            vid.style.maxHeight = '100%';
+            vid.innerHTML = `<source src="${url}">Votre navigateur ne prend pas en charge la vidéo.`;
             return vid;
         } else {
             const img = document.createElement('img');
@@ -354,7 +369,7 @@
         wrapper.innerHTML = '';
         wrapper.appendChild(RendreElementMedia(item));
 
-        document.getElementById('modalTitle').innerText = item.titre || (item.typeMedia === 'video' ? "Séquence Vidéo" : "Cliché HD");
+        document.getElementById('modalTitle').innerText = item.titre || "Cliché HD";
         document.getElementById('modalDesc').innerText = item.description || "Aucune note narrative ajoutée.";
         
         const tagsContainer = document.getElementById('modalTags');
@@ -363,7 +378,7 @@
             item.tags.forEach(tag => {
                 const span = document.createElement('span'); span.className = 'tag-pill'; span.innerText = `#${tag}`; tagsContainer.appendChild(span);
             });
-        } else { tagsContainer.innerHTML = "<span style='font-size:12px; color:var(--text-light);'>Aucune étiquette sémantique détectée.</span>"; }
+        } else { tagsContainer.innerHTML = "<span style='font-size:12px; color:var(--text-light);'>Aucune étiquette sémantique.</span>"; }
 
         const modalInsta = document.getElementById('modalInsta');
         if (item.suggestionInstagram) {
@@ -461,7 +476,7 @@
     });
 
     async function supprimerPhoto(id) {
-        if (!confirm("Supprimer définitivement ce fichier de l'infrastructure cloud ?")) return;
+        if (!confirm("Supprimer définitivement ce fichier ?")) return;
         await fetch(`/api/photos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
         window.location.reload();
     }

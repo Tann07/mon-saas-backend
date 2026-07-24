@@ -31,24 +31,33 @@ function simulerMistralAI(nomFichierBrut, titreFourni) {
     return { tags: tagsIntelligents, instagram: suggestionInstagram };
 }
 
-// 📸 ROUTE PELLICULE / ALL PHOTOS (RÉCUPÈRE TOUTES LES PHOTOS DE TOUS LES ALBUMS/SOUS-ALBUMS)
-router.get('/all', auth, async (req, res) => {
+// 📸 ROUTE PELLICULE COMPLETE (ALL PHOTOS & MY-PHOTOS)
+const getToutesLesPhotosUser = async (req, res) => {
     try {
         const userId = req.auth.userId;
 
-        // Trouver TOUS les albums (parents et sous-albums) de l'utilisateur
+        // 1. Récupérer tous les albums créés par l'utilisateur
         const tousLesAlbums = await Album.find({ createur: userId });
         const albumIds = tousLesAlbums.map(album => album._id);
 
-        // Trouver TOUTES les photos rattachées, triées de la plus récente à la plus ancienne
-        const photos = await Photo.find({ album: { $in: albumIds } }).sort({ _id: -1 });
+        // 2. Recherche élargie : Photos associées aux albums DE L'UTILISATEUR 
+        // OR photos directement liées au créateur si le champ existe
+        const photos = await Photo.find({
+            $or: [
+                { album: { $in: albumIds } },
+                { createur: userId }
+            ]
+        }).sort({ _id: -1 });
 
         res.status(200).json(photos);
     } catch (error) {
-        console.error("❌ Erreur Pellicule /all :", error.message);
+        console.error("❌ Erreur récupération Pellicule :", error.message);
         res.status(500).json({ message: "Erreur récupération de la pellicule", error: error.message });
     }
-});
+};
+
+router.get('/all', auth, getToutesLesPhotosUser);
+router.get('/my-photos', auth, getToutesLesPhotosUser);
 
 // Alias my-photos
 router.get('/my-photos', auth, async (req, res) => {
@@ -166,6 +175,56 @@ router.get('/album/:albumId', auth, async (req, res) => {
         res.status(200).json(photos);
     } catch (error) {
         res.status(500).json({ message: "Erreur récupération médias", error: error.message });
+    }
+});
+
+// ❤️ TOGGLE LIKE / FAVORI D'UNE PHOTO
+router.put('/:id/like', auth, async (req, res) => {
+    try {
+        const photo = await Photo.findById(req.params.id);
+        if (!photo) return res.status(404).json({ message: "Photo introuvable" });
+
+        const userId = req.auth.userId;
+        const index = photo.likes.indexOf(userId);
+
+        if (index === -1) {
+            photo.likes.push(userId); // Ajoute le like
+        } else {
+            photo.likes.splice(index, 1); // Retire le like
+        }
+
+        await photo.save();
+        res.status(200).json({ likesCount: photo.likes.length, isLiked: index === -1, likes: photo.likes });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur toggle like", error: error.message });
+    }
+});
+
+// 💬 AJOUTER UN COMMENTAIRE
+router.post('/:id/comment', auth, async (req, res) => {
+    try {
+        const { texte } = req.body;
+        if (!texte || texte.trim() === "") return res.status(400).json({ message: "Commentaire vide." });
+
+        const User = require('../models/User');
+        const user = await User.findById(req.auth.userId);
+        const photo = await Photo.findById(req.params.id);
+
+        if (!photo) return res.status(404).json({ message: "Photo introuvable" });
+
+        const nouveauCommentaire = {
+            auteur: user ? (user.nom || user.email.split('@')[0]) : "Collaborateur",
+            auteurId: req.auth.userId,
+            texte: texte.trim(),
+            date: new Date()
+        };
+
+        photo.commentaires.push(nouveauCommentaire);
+        await photo.save();
+
+        res.status(201).json({ message: "Commentaire ajouté !", commentaires: photo.commentaires });
+    } catch (error) {
+        res.status(500).json({ message: "Erreur ajout commentaire", error: error.message });
     }
 });
 

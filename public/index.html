@@ -34,20 +34,18 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 🖼️ SPLIT LAYOUT : PANNEAU VISUEL GAUCHE (DA EDITORIALE) */
+        /* 🖼️ SPLIT LAYOUT : PANNEAU VISUEL GAUCHE */
         .login-visual-panel {
             flex: 1.2;
             background: linear-gradient(135deg, #FAF6F0 0%, #EFEAE4 100%);
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content:间;
             justify-content: space-between;
             padding: 60px;
             overflow: hidden;
             border-right: 1px solid rgba(201, 122, 99, 0.06);
         }
-        /* Décoration organique discrète simulant une pellicule ou un reflet de lentille */
         .login-visual-panel::before {
             content: ''; position: absolute; bottom: -10%; left: -10%; width: 500px; height: 500px;
             border-radius: 50%; background: radial-gradient(circle, rgba(201,122,99,0.05) 0%, rgba(0,0,0,0) 70%);
@@ -83,7 +81,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* 🔐 SPLIT LAYOUT : FORMULAIRE DROITE (TECH MINIMALISTE) */
+        /* 🔐 SPLIT LAYOUT : FORMULAIRE DROITE */
         .login-form-panel {
             flex: 1;
             display: flex;
@@ -111,10 +109,10 @@
             margin-bottom: 32px;
         }
 
-        /* CHAMPS DE SAISIE MINIMALISTES */
+        /* CHAMPS DE SAISIE */
         .input-group {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         input { 
             width: 100%; 
@@ -134,7 +132,25 @@
             box-shadow: 0 0 0 4px rgba(201, 122, 99, 0.08);
         }
 
-        /* BOUTON D'ACCÈS INTÉLLIGENT */
+        /* LIEN MOT DE PASSE OUBLIÉ */
+        .forgot-link-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 18px;
+        }
+        .forgot-link {
+            font-size: 12.5px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition-fluid);
+        }
+        .forgot-link:hover {
+            color: var(--primary-terracotta);
+            text-decoration: underline;
+        }
+
+        /* BOUTON D'ACCÈS */
         button { 
             width: 100%; 
             padding: 16px; 
@@ -148,7 +164,6 @@
             font-family: inherit;
             transition: var(--transition-fluid);
             box-shadow: 0 10px 25px rgba(201, 122, 99, 0.15);
-            margin-top: 10px;
         }
         button:hover { 
             background-color: var(--primary-hover); 
@@ -175,7 +190,7 @@
 
         /* BANNIÈRES DE MESSAGES SYSTÈME */
         #message { 
-            margin-top: 24px; 
+            margin-top: 20px; 
             text-align: center; 
             font-size: 13px; 
             font-weight: 500; 
@@ -183,9 +198,18 @@
             border-radius: var(--radius-md);
             transition: var(--transition-fluid);
             display: none;
+            line-height: 1.5;
         }
 
-        /* RESPONSIVE DESIGN (BASCULE EN FULL-PANEL SUR MOBILE) */
+        .btn-forgot-error {
+            display: inline-block;
+            margin-top: 8px;
+            color: var(--primary-terracotta);
+            font-weight: 700;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
         @media (max-width: 868px) {
             body { flex-direction: column; }
             .login-visual-panel { display: none; }
@@ -223,6 +247,10 @@
                 <input type="password" id="password" placeholder="Mot de passe" required>
             </div>
             
+            <div class="forgot-link-wrapper">
+                <a href="/forgot-password.html" class="forgot-link">Mot de passe oublié ?</a>
+            </div>
+
             <button type="submit">Se connecter à l'Atelier</button>
             
             <p class="register-redirect">
@@ -235,11 +263,10 @@
 </div>
 
 <script>
-    // --- INTÉGRATION STRICTE DE TA LOGIQUE D'AUTHENTIFICATION ET DE TES REDIRECTIONS ---
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault(); 
         
-        const email = document.getElementById('email').value;
+        const email = document.getElementById('email').value.trim();
         const motDePasse = document.getElementById('password').value;
         const messageDiv = document.getElementById('message');
 
@@ -248,41 +275,58 @@
             messageDiv.style.color = "#8A6D3B";
             messageDiv.style.backgroundColor = "#FCF8E3";
             messageDiv.style.border = "1px solid #FBEED5";
-            messageDiv.innerText = "⏳ Validation des privilèges...";
+            messageDiv.innerHTML = "⏳ Validation des accès...";
 
-            const response = await fetch('/api/auth/login', {
+            // Appel de la route d'authentification
+            let response = await fetch('/api/users/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, motDePasse })
             });
 
+            // Secours vers la route alternative si auth/login est utilisée
+            if (!response.ok && response.status === 404) {
+                response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, motDePasse })
+                });
+            }
+
             const data = await response.json();
 
             if (response.ok) {
-                // Enregistrement sécurisé du JWT Token d'accès
                 localStorage.setItem('monBadgePhoto', data.token);
 
                 messageDiv.style.color = "#3C763D";
                 messageDiv.style.backgroundColor = "#DFF0D8";
                 messageDiv.style.border = "1px solid #D6E9C6";
-                messageDiv.innerText = `✅ Connecté avec succès. Content de vous revoir !`;
+                messageDiv.innerHTML = `✅ Connecté avec succès. Redirection...`;
                 
                 setTimeout(() => {
                     window.location.href = '/dashboard.html'; 
-                }, 1400);
+                }, 1000);
 
             } else {
                 messageDiv.style.color = "#A94442";
                 messageDiv.style.backgroundColor = "#F2DEDE";
                 messageDiv.style.border = "1px solid #EBCCD1";
-                messageDiv.innerText = `❌ ${data.message}`;
+                
+                // Proposition de réinitialisation de mot de passe en cas d'erreur
+                messageDiv.innerHTML = `
+                    ❌ ${data.message || "Identifiants incorrects."}
+                    <br>
+                    <a href="/forgot-password.html" class="btn-forgot-error">
+                        🔑 Mot de passe oublié ? Réinitialiser
+                    </a>
+                `;
             }
         } catch (error) {
             messageDiv.style.display = "block";
             messageDiv.style.color = "#A94442";
             messageDiv.style.backgroundColor = "#F2DEDE";
             messageDiv.style.border = "1px solid #EBCCD1";
-            messageDiv.innerText = "❌ Échec de la négociation : impossible de joindre le serveur.";
+            messageDiv.innerHTML = "❌ Connexion au serveur impossible.";
         }
     });
 </script>

@@ -6,7 +6,6 @@
     <title>Espace Partagé — Galerie Photo & Vidéo</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,12 +13,12 @@
     <style>
         /* 🎨 DESIGN SYSTEM BOHO-TECH */
         :root {
-            --bg-boho: #FAF6F0;           /* Crème lin doux */
-            --primary-terracotta: #C97A63;  /* Ocre signature */
+            --bg-boho: #FAF6F0;
+            --primary-terracotta: #C97A63;
             --primary-hover: #B26550;
-            --secondary-sage: #8DA191;     /* Vert sauge */
-            --text-dark: #2D2A26;          /* Charbon minéral */
-            --text-light: #766E65;         /* Sable chaud */
+            --secondary-sage: #8DA191;
+            --text-dark: #2D2A26;
+            --text-light: #766E65;
             --glass-bg: rgba(255, 255, 255, 0.85);
             --radius-lg: 24px;
             --radius-md: 16px;
@@ -48,11 +47,11 @@
         }
         .album-title { 
             font-family: 'Playfair Display', serif; 
-            font-size: 20px; 
+            font-size: 22px; 
             font-weight: 600; 
             color: var(--text-dark); 
         }
-        
+
         .btn-download-all { 
             background: var(--primary-terracotta); color: white; border: none; 
             padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 600; 
@@ -68,6 +67,24 @@
         }
 
         .container { max-width: 1240px; margin: 0 auto; padding: 20px 40px; }
+
+        /* ÉCRAN PIN */
+        .pin-screen {
+            display: none; max-width: 400px; margin: 60px auto; background: white;
+            padding: 36px 28px; border-radius: var(--radius-lg); text-align: center;
+            box-shadow: 0 15px 35px rgba(74, 58, 49, 0.08); border: 1px solid rgba(240, 230, 220, 0.8);
+        }
+        .pin-icon { font-size: 40px; margin-bottom: 12px; }
+        .pin-screen h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 8px; }
+        .pin-input {
+            width: 100%; padding: 14px; text-align: center; font-size: 20px; letter-spacing: 8px;
+            border: 1px solid #E5DCD3; border-radius: var(--radius-sm); margin: 20px 0; outline: none;
+            background: #FCFAF7; font-family: inherit;
+        }
+        .btn-pin-submit {
+            width: 100%; padding: 12px; background: var(--primary-terracotta); color: white;
+            border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 14px; cursor: pointer;
+        }
         
         /* 🖼️ GRILLE PHOTO & VIDÉO */
         .gallery-grid { 
@@ -86,13 +103,6 @@
             width: 100%; height: 100%; object-fit: cover; display: block; transition: var(--transition-fluid); 
         }
         .media-card video { background: #000; }
-        
-        .badge-video {
-            position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.65);
-            backdrop-filter: blur(6px); color: white; padding: 4px 10px; border-radius: 12px;
-            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-            z-index: 2;
-        }
 
         .play-overlay {
             position: absolute; inset: 0; display: flex; justify-content: center; align-items: center;
@@ -107,15 +117,15 @@
         }
         .media-card:hover img { transform: scale(1.05); }
 
-        /* 🎞️ LIGHTBOX MIXTE (PHOTO & VIDÉO) */
+        /* 🎞️ LIGHTBOX FULLSCREEN */
         .lightbox { 
             display: none; position: fixed; inset: 0; 
-            background: rgba(35, 32, 28, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            z-index: 2000; justify-content: center; align-items: center; user-select: none; 
+            background: rgba(35, 32, 28, 0.94); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 999999 !important; justify-content: center; align-items: center; user-select: none; 
             animation: fadeIn 0.3s ease;
         }
         .lightbox-media { 
-            max-width: 85%; max-height: 75vh; object-fit: contain; 
+            max-width: 85vw; max-height: 80vh; object-fit: contain; 
             border-radius: var(--radius-sm); box-shadow: 0 30px 70px rgba(0,0,0,0.5);
         }
         
@@ -138,7 +148,7 @@
             position: absolute; bottom: 30px; background: rgba(255, 255, 255, 0.95); 
             backdrop-filter: blur(8px);
             color: var(--text-dark); border: none; padding: 12px 26px; border-radius: 30px; 
-            font-weight: 600; cursor: pointer; text-decoration: none; font-size: 13px; 
+            font-weight: 600; cursor: pointer; font-size: 13px; 
             transition: var(--transition-fluid); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             display: inline-flex; align-items: center; gap: 8px; z-index: 2100;
         }
@@ -155,9 +165,21 @@
 </nav>
 
 <div class="container">
+    <!-- ÉCRAN CODE PIN SI REQUIS -->
+    <div class="pin-screen" id="pinScreen">
+        <div class="pin-icon">🔒</div>
+        <h2>Album Protégé</h2>
+        <p style="font-size: 12px; color: var(--text-light);">Veuillez entrer le code PIN transmis par le propriétaire :</p>
+        <input type="password" id="pinInput" class="pin-input" maxlength="8" placeholder="••••" autofocus>
+        <button class="btn-pin-submit" id="btnVerifyPin">Déverrouiller la galerie</button>
+        <div id="pinError" style="color: #C96363; font-size: 12px; margin-top: 10px; display: none;"></div>
+    </div>
+
+    <!-- GRILLE DES MÉDIAS -->
     <div class="gallery-grid" id="publicGrid"></div>
 </div>
 
+<!-- LIGHTBOX DIAPORAMA -->
 <div class="lightbox" id="publicLightbox">
     <button id="closeLb">✕</button>
     <button class="lightbox-nav" id="prevLb" style="left: 30px;">❮</button>
@@ -174,6 +196,8 @@
     const codePartage = urlParams.get('code') || urlParams.get('token');
 
     const grid = document.getElementById('publicGrid');
+    const pinScreen = document.getElementById('pinScreen');
+    const pinError = document.getElementById('pinError');
     const lightbox = document.getElementById('publicLightbox');
     const mediaContainer = document.getElementById('lightboxMediaContainer');
 
@@ -187,11 +211,13 @@
             return;
         }
 
+        await chargerGalerie();
+    });
+
+    async function chargerGalerie() {
         try {
-            // Tente la route spécifique aux albums partagés
             let response = await fetch(`/api/albums/shared/${codePartage}`);
             if (!response.ok) {
-                // Secours vers la route auth publique alternative
                 response = await fetch(`/api/auth/public-album/${codePartage}`);
             }
 
@@ -201,19 +227,54 @@
                 grid.innerHTML = "<p style='grid-column:1/-1; text-align:center; color:var(--text-light); font-style:italic;'>❌ Lien de partage expiré ou invalide.</p>";
                 return;
             }
-            
+
             nomAlbum = data.album ? data.album.titre : "Collection Privée";
             document.getElementById('txtAlbumTitle').innerText = `${nomAlbum}`;
-            listeMedias = data.photos || [];
 
-            afficherMediasPublic(listeMedias);
-            configurerTelechargementZip();
+            if (data.pinRequis) {
+                pinScreen.style.display = 'block';
+                grid.style.display = 'none';
+            } else {
+                pinScreen.style.display = 'none';
+                listeMedias = data.photos || [];
+                afficherMediasPublic(listeMedias);
+                configurerTelechargementZip();
+            }
 
         } catch (error) {
             console.error(error);
             grid.innerHTML = "<p style='grid-column:1/-1; text-align:center; color:var(--text-light);'>❌ Connexion au serveur impossible.</p>";
         }
-    });
+    }
+
+    document.getElementById('btnVerifyPin').addEventListener('click', verifierPin);
+    document.getElementById('pinInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') verifierPin(); });
+
+    async function verifierPin() {
+        const pin = document.getElementById('pinInput').value.trim();
+        if (!pin) return;
+
+        try {
+            const res = await fetch(`/api/albums/shared/${codePartage}/verify-pin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                pinScreen.style.display = 'none';
+                grid.style.display = 'grid';
+                listeMedias = data.photos || [];
+                afficherMediasPublic(listeMedias);
+                configurerTelechargementZip();
+            } else {
+                pinError.innerText = data.message || "Code PIN incorrect !";
+                pinError.style.display = 'block';
+            }
+        } catch (err) { alert("Erreur réseau."); }
+    }
 
     function afficherMediasPublic(medias) {
         grid.innerHTML = '';
@@ -231,7 +292,6 @@
             if (estVideo) {
                 card.innerHTML = `
                     <video src="${item.urlImage}#t=0.5" preload="metadata" muted playsinline></video>
-                    <div class="badge-video">🎬 Vidéo</div>
                     <div class="play-overlay">▶</div>
                 `;
             } else {
@@ -243,6 +303,7 @@
         });
         
         document.getElementById('btnDlAllPublic').disabled = false;
+        grid.style.display = 'grid';
     }
 
     function ouvrirDiaporama(index) {
@@ -254,17 +315,9 @@
 
         if (estVideo) {
             const vid = document.createElement('video');
-            vid.controls = true;
-            vid.autoplay = true;
-            vid.playsInline = true;
+            vid.controls = true; vid.autoplay = true; vid.playsInline = true;
             vid.className = 'lightbox-media';
-            
-            // Multi-sources pour forcer la compatibilité Chrome/Safari/iOS
-            vid.innerHTML = `
-                <source src="${currentItem.urlImage}" type="video/mp4">
-                <source src="${currentItem.urlImage}" type="video/quicktime">
-                Votre navigateur ne prend pas en charge la lecture de cette vidéo.
-            `;
+            vid.innerHTML = `<source src="${currentItem.urlImage}">`;
             mediaContainer.appendChild(vid);
         } else {
             const img = document.createElement('img');
@@ -276,26 +329,14 @@
         lightbox.style.display = 'flex';
 
         document.getElementById('btnDlSinglePublic').onclick = async () => {
-            const btn = document.getElementById('btnDlSinglePublic');
-            btn.innerText = "⏳ Téléchargement...";
-
             try {
                 const response = await fetch(currentItem.urlImage);
                 const blob = await response.blob();
                 const ext = estVideo ? 'mp4' : 'jpg';
-
                 const urlBlob = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = urlBlob;
-                a.download = `Media_${indexActuel + 1}.${ext}`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(urlBlob);
-            } catch (err) {
-                alert("Erreur lors du téléchargement.");
-            }
-            btn.innerText = "📥 Enregistrer ce fichier";
+                const a = document.createElement('a'); a.href = urlBlob; a.download = `Media_${indexActuel + 1}.${ext}`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            } catch (err) { alert("Erreur lors du téléchargement."); }
         };
     }
 
@@ -304,7 +345,6 @@
         indexActuel += direction;
         if (indexActuel >= listeMedias.length) indexActuel = 0;
         if (indexActuel < 0) indexActuel = listeMedias.length - 1;
-        
         ouvrirDiaporama(indexActuel);
     }
 
@@ -312,9 +352,7 @@
         document.getElementById('btnDlAllPublic').onclick = async () => {
             if (listeMedias.length === 0) return;
             const btn = document.getElementById('btnDlAllPublic');
-            btn.innerText = "⏳ Traitement de l'archive...";
-            btn.disabled = true;
-
+            btn.innerText = "⏳ Traitement ZIP...";
             const zip = new JSZip();
             for (let i = 0; i < listeMedias.length; i++) {
                 try {
@@ -323,43 +361,27 @@
                     const blob = await response.blob();
                     const estVideo = item.typeMedia === 'video' || (item.urlImage && (item.urlImage.endsWith('.mp4') || item.urlImage.endsWith('.mov')));
                     const ext = estVideo ? 'mp4' : 'jpg';
-
                     zip.file(`Fichier_${i + 1}.${ext}`, blob);
-                } catch (err) { 
-                    console.error("Erreur de compression d'un fichier :", err); 
-                }
+                } catch (err) {}
             }
-
             zip.generateAsync({ type: "blob" }).then((content) => {
                 const urlZip = window.URL.createObjectURL(content);
-                const a = document.createElement('a');
-                a.href = urlZip;
-                a.download = `Collection_${nomAlbum.replace(/\s+/g, '_')}_Archive.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-
+                const a = document.createElement('a'); a.href = urlZip; a.download = `Collection_${nomAlbum.replace(/\s+/g, '_')}_Archive.zip`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 btn.innerText = "📥 Tout télécharger (.ZIP)";
-                btn.disabled = false;
             });
         };
     }
 
-    document.getElementById('closeLb').addEventListener('click', () => {
-        lightbox.style.display = 'none';
-        mediaContainer.innerHTML = '';
-    });
-    document.getElementById('nextLb').addEventListener('click', () => naviguer(1));
-    document.getElementById('prevLb').addEventListener('click', () => naviguer(-1));
+    document.getElementById('closeLb').onclick = () => { lightbox.style.display = 'none'; mediaContainer.innerHTML = ''; };
+    document.getElementById('nextLb').onclick = () => naviguer(1);
+    document.getElementById('prevLb').onclick = () => naviguer(-1);
 
     document.addEventListener('keydown', (e) => {
         if (lightbox.style.display === 'flex') {
             if (e.key === 'ArrowRight') naviguer(1);
             if (e.key === 'ArrowLeft') naviguer(-1);
-            if (e.key === 'Escape') {
-                lightbox.style.display = 'none';
-                mediaContainer.innerHTML = '';
-            }
+            if (e.key === 'Escape') { lightbox.style.display = 'none'; mediaContainer.innerHTML = ''; }
         }
     });
 </script>

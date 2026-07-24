@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script>
+        (function() {
+            const token = localStorage.getItem('monBadgePhoto');
+            if (!token) {
+                window.location.replace('/index.html');
+            }
+        })();
+    </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galerie Intelligente — Mon SaaS Photo</title>
+    <title>Galerie Collaborative — Mon SaaS Photo</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,12 +37,17 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-boho); color: var(--text-dark); padding-top: 105px; min-height: 100vh; }
         .container { max-width: 1240px; margin: 0 auto; padding: 20px 40px; }
 
-        /* FIL D'ARIANE */
-        .breadcrumb-trail { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; font-size: 13px; font-weight: 600; background: white; padding: 10px 18px; border-radius: var(--radius-sm); border: 1px solid rgba(240, 230, 220, 0.8); width: fit-content; }
+        /* BANDEAU COLLABORATIF & FIL D'ARIANE */
+        .breadcrumb-trail { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; font-size: 13px; font-weight: 600; background: white; padding: 10px 18px; border-radius: var(--radius-sm); border: 1px solid rgba(240, 230, 220, 0.8); width: fit-content; }
         .crumb-item { color: var(--primary-terracotta); text-decoration: none; }
         .crumb-item:hover { text-decoration: underline; }
-        .crumb-separator { opacity: 0.4; }
-        .crumb-current { font-weight: 700; }
+
+        .collaboration-bar {
+            display: flex; align-items: center; gap: 12px; font-size: 12px; background: white; padding: 10px 20px;
+            border-radius: var(--radius-sm); border: 1px solid rgba(240, 230, 220, 0.8); margin-bottom: 20px; width: fit-content; flex-wrap: wrap;
+        }
+        .badge-owner { background: rgba(201, 122, 99, 0.15); color: var(--primary-terracotta); padding: 4px 10px; border-radius: 12px; font-weight: 700; }
+        .badge-member { background: rgba(141, 161, 145, 0.15); color: var(--secondary-sage); padding: 4px 10px; border-radius: 12px; font-weight: 600; }
 
         .album-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
         #albumMainTitle { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; }
@@ -51,41 +65,63 @@
         .drag-zone { border: 2px dashed #E5DCD3; padding: 28px; border-radius: var(--radius-md); text-align: center; background: #FCFAF7; cursor: pointer; }
         .upload-actions { display: none; margin-top: 16px; justify-content: space-between; align-items: center; background: var(--bg-boho); padding: 14px 20px; border-radius: var(--radius-md); }
 
-        .toolbar { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: center; margin-bottom: 32px; background: white; padding: 20px 28px; border-radius: var(--radius-lg); border: 1px solid rgba(240, 230, 220, 0.6); }
-        .btn-utility { border: none; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; }
-        .search-box { flex: 1; min-width: 280px; }
-        .search-box input { width: 100%; padding: 12px 18px; border: 1px solid #E5DCD3; border-radius: var(--radius-md); background: #FCFAF7; outline: none; }
+        /* BARRE D'OUTILS, FILTRES & VUES */
+        .toolbar { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 32px; background: white; padding: 20px 28px; border-radius: var(--radius-lg); border: 1px solid rgba(240, 230, 220, 0.6); }
+        
+        .filter-group { display: flex; gap: 6px; }
+        .btn-filter { background: #FCFAF7; border: 1px solid #E5DCD3; padding: 10px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-light); }
+        .btn-filter.active { background: var(--primary-terracotta); color: white; border-color: var(--primary-terracotta); }
 
-        .view-options button { background: #FCFAF7; border: 1px solid #E5DCD3; padding: 10px 18px; margin-left: 6px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 13px; }
+        .search-box { flex: 1; min-width: 240px; }
+        .search-box input { width: 100%; padding: 11px 16px; border: 1px solid #E5DCD3; border-radius: var(--radius-md); background: #FCFAF7; outline: none; }
+
+        .view-options button { background: #FCFAF7; border: 1px solid #E5DCD3; padding: 10px 16px; margin-left: 4px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 13px; color: var(--text-light); }
         .view-options button.active { background: var(--text-dark); color: white; border-color: var(--text-dark); }
 
-        /* PHOTOS GRILLE */
+        /* GRILLE DES PHOTOS */
         .gallery-grid { display: grid; gap: 24px; }
-        .grid-small { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } 
+        .grid-small { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); } 
         .grid-large { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 
         .photo-card { position: relative; border-radius: var(--radius-md); overflow: hidden; background: #EFEAE4; aspect-ratio: 1 / 1; cursor: pointer; }
         .photo-card img, .photo-card video { width: 100%; height: 100%; object-fit: cover; }
-        .btn-delete { position: absolute; top: 12px; right: 12px; background: rgba(201, 99, 99, 0.9); color: white; border: none; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 11px; opacity: 0; }
+        
+        /* LIKES SUR LA CARTE */
+        .btn-like-card {
+            position: absolute; bottom: 10px; right: 10px; background: rgba(255, 255, 255, 0.9);
+            border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: var(--transition-fluid); z-index: 10;
+        }
+        .btn-like-card:hover { transform: scale(1.15); }
+        .btn-like-card.liked { background: #FFE8E8; color: #E63946; }
+
+        .btn-delete { position: absolute; top: 10px; right: 10px; background: rgba(201, 99, 99, 0.9); color: white; border: none; padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 11px; opacity: 0; z-index: 10; }
         .photo-card:hover .btn-delete { opacity: 1; }
 
-        /* MODAL INSPECTEUR IA */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(45, 42, 38, 0.6); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center; padding: 24px; }
-        .modal-content { background: white; padding: 35px; border-radius: var(--radius-lg); max-width: 720px; width: 100%; display: flex; gap: 32px; flex-wrap: wrap; position: relative; }
-        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 22px; cursor: pointer; border: none; background: rgba(0,0,0,0.06); width: 36px; height: 36px; border-radius: 50%; display:flex; align-items:center; justify-content:center; }
+        /* MODAL INSPECTEUR IA + COMMENTAIRES (VUE CONFORT) */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(45, 42, 38, 0.7); backdrop-filter: blur(8px); z-index: 999990 !important; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; padding: 28px; border-radius: var(--radius-lg); max-width: 900px; width: 100%; display: flex; gap: 24px; flex-wrap: wrap; position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal-close { position: absolute; top: 16px; right: 16px; font-size: 20px; cursor: pointer; border: none; background: rgba(0,0,0,0.06); width: 34px; height: 34px; border-radius: 50%; display:flex; align-items:center; justify-content:center; }
         .modal-close:hover { background: #C96363; color: white; }
-        .modal-img { flex: 1.1; min-width: 280px; max-height: 380px; object-fit: contain; border-radius: var(--radius-md); background: #FCFAF7; border: 1px solid #E5DCD3; }
-        .modal-info { flex: 1; min-width: 260px; display: flex; flex-direction: column; justify-content: space-between; }
-        .tag-pill { display: inline-block; background: rgba(201, 122, 99, 0.08); color: var(--primary-terracotta); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; margin: 4px 2px; }
-        .insta-box { background: #FCFAF7; padding: 14px; border-radius: var(--radius-sm); font-size: 13px; font-style: italic; margin-top: 10px; border-left: 3px solid var(--primary-terracotta); }
-        .btn-modal-action { background: var(--text-dark); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 12px; margin-top: 8px; width: 100%; }
 
-        /* LIGHTBOX DIAPORAMA FULLSCREEN */
-        .lightbox-fullscreen { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.92); z-index: 3000; justify-content: center; align-items: center; }
-        .lightbox-close { position: absolute; top: 24px; right: 24px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 24px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display:flex; align-items:center; justify-content:center; }
-        .lightbox-close:hover { background: #C96363; }
-        .lightbox-btn-nav { position: absolute; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 20px; width: 54px; height: 54px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        #lightboxImg { max-width: 85%; max-height: 80vh; object-fit: contain; }
+        .modal-media-col { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; gap: 12px; }
+        .modal-media-col img, .modal-media-col video { width: 100%; max-height: 380px; object-fit: contain; border-radius: var(--radius-md); background: #FCFAF7; border: 1px solid #E5DCD3; }
+        
+        .modal-comments-col { flex: 1; min-width: 280px; display: flex; flex-direction: column; justify-content: space-between; border-left: 1px solid #FAF6F0; padding-left: 20px; }
+        .comments-box { flex: 1; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+        .comment-item { background: #FCFAF7; padding: 8px 12px; border-radius: 8px; border: 1px solid #E5DCD3; font-size: 12px; }
+        .comment-author { font-weight: 700; color: var(--primary-terracotta); font-size: 11px; }
+
+        .tag-pill { display: inline-block; background: rgba(201, 122, 99, 0.08); color: var(--primary-terracotta); padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; margin: 2px; }
+        .insta-box { background: #FCFAF7; padding: 10px; border-radius: 8px; font-size: 12px; font-style: italic; margin-top: 8px; border-left: 3px solid var(--primary-terracotta); }
+        .btn-modal-action { background: var(--text-dark); color: white; border: none; padding: 10px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 12px; width: 100%; margin-top: 6px; }
+
+        /* LIGHTBOX FULLSCREEN */
+        .lightbox-fullscreen { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.96); z-index: 999999 !important; justify-content: center; align-items: center; }
+        .lightbox-close { position: absolute; top: 24px; right: 24px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display:flex; align-items:center; justify-content:center; }
+        .lightbox-btn-nav { position: absolute; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 20px; width: 54px; height: 54px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #lightboxContainer { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; }
+        #lightboxContainer img, #lightboxContainer video { max-width: 90vw; max-height: 88vh; object-fit: contain; }
     </style>
 </head>
 
@@ -96,6 +132,12 @@
 <div class="container">
     <div class="breadcrumb-trail" id="breadcrumbTrail">
         <a class="crumb-item" href="/my-albums.html">📁 Mes Collections</a>
+    </div>
+
+    <!-- BANDEAU PROPRIÉTAIRE ET COLLABORATEURS -->
+    <div class="collaboration-bar" id="collaborationBar">
+        <span>👑 Créateur : <strong id="ownerName" class="badge-owner">Chargement...</strong></span>
+        <span>👥 Membres : <span id="membersList">Aucun collaborateur</span></span>
     </div>
 
     <div class="album-header-row">
@@ -125,13 +167,15 @@
     </div>
 
     <div class="toolbar">
-        <div style="display:flex; gap:12px;">
-            <button id="btnDownloadAll" class="btn-utility" style="background:rgba(201, 122, 99, 0.1); color:var(--primary-terracotta);">📥 Archiver (.ZIP)</button>
-            <button id="btnShareWhatsApp" class="btn-utility" style="background:rgba(141, 161, 145, 0.1); color:#437651;">💬 Diffuser WhatsApp</button>
+        <div class="filter-group">
+            <button class="btn-filter active" id="btnFilterAll">Tout</button>
+            <button class="btn-filter" id="btnFilterFav">❤️ Favoris</button>
         </div>
+
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Filtrer par mot-clé ou tag de l'IA...">
         </div>
+
         <div class="view-options">
             <button id="btnViewSmall" class="active">Vue Mosaïque</button>
             <button id="btnViewLarge">Vue Confort (Inspecteur)</button>
@@ -141,26 +185,39 @@
     <div class="gallery-grid grid-small" id="galleryGrid"></div>
 </div>
 
-<!-- MODAL INSPECTEUR IA -->
+<!-- MODAL INSPECTEUR IA + COMMENTAIRES (VUE CONFORT) -->
 <div class="modal" id="photoModal">
     <div class="modal-content">
-        <button class="modal-close" id="closeModal" title="Fermer">✕</button>
-        <img class="modal-img" id="modalImg" src="" alt="Source">
-        <div class="modal-info">
+        <button class="modal-close" id="closeModal">✕</button>
+        
+        <div class="modal-media-col" id="modalMediaCol">
+            <!-- Emplacement Média dynamique -->
+            <button class="btn-modal-action" id="btnLaunchSlideshow" style="background: #8A65B2;">🎞️ Ouvrir en Plein Écran</button>
+            <button class="btn-modal-action" id="btnDownloadSingle" style="background: var(--secondary-sage);">📥 Enregistrer ce fichier</button>
+            <button class="btn-modal-action" id="btnSetCover" style="background: #FCFAF7; color: var(--text-dark); border: 1px solid #E5DCD3;">📸 Définir comme couverture</button>
+        </div>
+
+        <div class="modal-comments-col">
             <div>
-                <h2 id="modalTitle" style="font-family:'Playfair Display', serif; font-size:22px;">Sans titre</h2>
-                <p id="modalDesc" style="color: var(--text-light); font-size: 13px; margin-bottom: 12px;"></p>
-                <h4 style="font-size: 11px; text-transform: uppercase; color: var(--text-light);">🏷️ Analyse sémantique :</h4>
-                <div id="modalTags" style="margin-bottom: 12px;"></div>
+                <h2 id="modalTitle" style="font-family:'Playfair Display', serif; font-size:20px;">Sans titre</h2>
+                <p id="modalDesc" style="color: var(--text-light); font-size: 12px; margin-bottom: 8px;"></p>
+                <div id="modalTags" style="margin-bottom: 8px;"></div>
                 
-                <button class="btn-modal-action" id="btnLaunchSlideshow" style="background: #8A65B2;">🎞️ Ouvrir en Plein Écran</button>
-                <button class="btn-modal-action" id="btnDownloadSingle" style="background: var(--secondary-sage);">📥 Enregistrer l'image</button>
-                <button class="btn-modal-action" id="btnSetCover" style="background: #FCFAF7; color: var(--text-dark); border: 1px solid #E5DCD3;">📸 Définir comme couverture</button>
+                <div id="instaSection" style="margin-bottom: 12px;">
+                    <h4 style="font-size: 10px; text-transform: uppercase; color: var(--primary-terracotta);">✨ Suggestion Réseaux :</h4>
+                    <div class="insta-box" id="modalInsta"></div>
+                    <button class="btn-modal-action" id="btnCopyInsta" style="background: var(--primary-terracotta); padding:6px; margin-top:4px;">📋 Copier la description</button>
+                </div>
             </div>
-            <div id="instaSection" style="margin-top: 14px;">
-                <h4 style="font-size: 11px; text-transform: uppercase; color: var(--primary-terracotta);">✨ Suggestion Réseaux :</h4>
-                <div class="insta-box" id="modalInsta"></div>
-                <button class="btn-modal-action" id="btnCopy" style="background: var(--primary-terracotta);">📋 Copier la description</button>
+
+            <!-- SECTION COMMENTAIRES DU SOUVENIR -->
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <h4 style="font-size: 11px; text-transform: uppercase; color: var(--text-light);">💬 Commentaires :</h4>
+                <div class="comments-box" id="commentsBox"></div>
+                <div style="display:flex; gap:6px;">
+                    <input type="text" id="commentInput" placeholder="Ajouter un commentaire..." style="flex:1; padding:8px 12px; border:1px solid #E5DCD3; border-radius:6px; font-size:12px; outline:none;">
+                    <button id="btnSendComment" style="background:var(--text-dark); color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:600; font-size:11px; cursor:pointer;">Poster</button>
+                </div>
             </div>
         </div>
     </div>
@@ -168,15 +225,22 @@
 
 <!-- LIGHTBOX FULLSCREEN -->
 <div class="lightbox-fullscreen" id="lightboxFullscreen">
-    <button class="lightbox-close" id="closeLightbox" title="Fermer">✕</button>
+    <button class="lightbox-close" id="closeLightbox">✕</button>
     <button class="lightbox-btn-nav" id="prevLightbox" style="left: 30px;">❮</button>
-    <img id="lightboxImg" src="" alt="Diaporama">
+    <div id="lightboxContainer"></div>
     <button class="lightbox-btn-nav" id="nextLightbox" style="right: 30px;">❯</button>
 </div>
 
 <script>
     const token = localStorage.getItem('monBadgePhoto');
     if (!token) window.location.replace('/index.html');
+
+    // Identifiant utilisateur courant
+    let currentUserId = "";
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        currentUserId = payload.userId;
+    } catch(e) {}
 
     const urlParams = new URLSearchParams(window.location.search);
     let albumId = urlParams.get('id') || localStorage.getItem('currentAlbumId');
@@ -185,25 +249,46 @@
     const galleryGrid = document.getElementById('galleryGrid');
     const modal = document.getElementById('photoModal'); 
     const lbFullscreen = document.getElementById('lightboxFullscreen');
-    const lbImg = document.getElementById('lightboxImg');
+    const lbContainer = document.getElementById('lightboxContainer');
 
     let toutesLesPhotos = []; 
     let photosFiltrees = [];
     let indexInspecteur = 0;
-    let modeAffichage = 'small'; // 'small' = Mosaïque (Grand direct), 'large' = Confort (Inspecteur)
+    let modeAffichage = 'small'; // 'small' = Mosaïque, 'large' = Confort
+    let filtreMode = 'all'; 
 
+    // BOUTONS VUES (MOSAÏQUE / CONFORT)
     const btnSmall = document.getElementById('btnViewSmall');
     const btnLarge = document.getElementById('btnViewLarge');
-    
-    btnSmall.onclick = () => { 
-        galleryGrid.className = 'gallery-grid grid-small'; 
-        btnSmall.classList.add('active'); btnLarge.classList.remove('active'); 
-        modeAffichage = 'small'; afficherPhotos(photosFiltrees);
+
+    btnSmall.onclick = () => {
+        modeAffichage = 'small';
+        galleryGrid.className = 'gallery-grid grid-small';
+        btnSmall.classList.add('active'); btnLarge.classList.remove('active');
+        afficherPhotos(photosFiltrees);
     };
-    btnLarge.onclick = () => { 
-        galleryGrid.className = 'gallery-grid grid-large'; 
-        btnLarge.classList.add('active'); btnSmall.classList.remove('active'); 
-        modeAffichage = 'large'; afficherPhotos(photosFiltrees);
+
+    btnLarge.onclick = () => {
+        modeAffichage = 'large';
+        galleryGrid.className = 'gallery-grid grid-large';
+        btnLarge.classList.add('active'); btnSmall.classList.remove('active');
+        afficherPhotos(photosFiltrees);
+    };
+
+    // BOUTONS FILTRES FAVORIS
+    const btnFilterAll = document.getElementById('btnFilterAll');
+    const btnFilterFav = document.getElementById('btnFilterFav');
+
+    btnFilterAll.onclick = () => {
+        filtreMode = 'all';
+        btnFilterAll.classList.add('active'); btnFilterFav.classList.remove('active');
+        appliquerFiltres();
+    };
+
+    btnFilterFav.onclick = () => {
+        filtreMode = 'fav';
+        btnFilterFav.classList.add('active'); btnFilterAll.classList.remove('active');
+        appliquerFiltres();
     };
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -218,15 +303,34 @@
             if (res.ok) {
                 const data = await res.json();
                 if (data.album) document.getElementById('albumMainTitle').innerText = data.album.titre;
+
+                document.getElementById('ownerName').innerText = data.createur || "Propriétaire";
+                if (data.collaborateurs && data.collaborateurs.length > 0) {
+                    document.getElementById('membersList').innerHTML = data.collaborateurs.map(c => `<span class="badge-member">${c}</span>`).join(' ');
+                }
+
                 construireBreadcrumb(data.breadcrumb || []);
                 afficherSousAlbums(data.subAlbums || []);
                 toutesLesPhotos = data.photos || [];
-                photosFiltrees = [...toutesLesPhotos];
-                afficherPhotos(photosFiltrees);
-                configurerGlobaux();
+                appliquerFiltres();
             }
         } catch(e) {}
     }
+
+    function appliquerFiltres() {
+        const recherche = document.getElementById('searchInput').value.toLowerCase().trim();
+        photosFiltrees = toutesLesPhotos.filter(photo => {
+            const matchSearch = (photo.tags && photo.tags.some(t => t.toLowerCase().includes(recherche))) ||
+                                (photo.titre && photo.titre.toLowerCase().includes(recherche));
+            const isLiked = photo.likes && photo.likes.includes(currentUserId);
+            const matchFav = (filtreMode === 'all') || (filtreMode === 'fav' && isLiked);
+
+            return matchSearch && matchFav;
+        });
+        afficherPhotos(photosFiltrees);
+    }
+
+    document.getElementById('searchInput').addEventListener('input', appliquerFiltres);
 
     function construireBreadcrumb(breadcrumb) {
         const trail = document.getElementById('breadcrumbTrail');
@@ -258,7 +362,7 @@
     function afficherPhotos(liste) {
         galleryGrid.innerHTML = '';
         if (!liste || liste.length === 0) {
-            galleryGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-light); italic;'>Aucun fichier photo.</p>";
+            galleryGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-light); italic;'>Aucun fichier photo correspondant.</p>";
             return;
         }
 
@@ -266,6 +370,7 @@
             const card = document.createElement('div');
             card.className = 'photo-card';
             const estVideo = photo.typeMedia === 'video' || (photo.urlImage && photo.urlImage.match(/\.(mp4|mov|webm)$/i));
+            const isLiked = photo.likes && photo.likes.includes(currentUserId);
 
             card.innerHTML = `
                 ${estVideo ? 
@@ -275,16 +380,28 @@
                      </div>` : 
                     `<img src="${photo.urlImage}">`
                 }
+                <button class="btn-like-card ${isLiked ? 'liked' : ''}" title="Mettre en favori">${isLiked ? '❤️' : '🤍'}</button>
                 <button class="btn-delete">✕ Supprimer</button>
             `;
 
+            // LIKE / FAVORI
+            card.querySelector('.btn-like-card').onclick = async (e) => {
+                e.stopPropagation();
+                const res = await fetch(`/api/photos/${photo._id}/like`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    photo.likes = data.likes;
+                    appliquerFiltres();
+                }
+            };
+
+            // COMPORTEMENT DU CLIC :
+            // Vue Mosaïque ('small') => Plein Écran Direct
+            // Vue Confort ('large') => Inspecteur IA + Commentaires
             card.onclick = (e) => {
-                if (e.target.classList.contains('btn-delete')) return;
+                if (e.target.classList.contains('btn-delete') || e.target.classList.contains('btn-like-card')) return;
                 indexInspecteur = index;
 
-                // 🎯 COMPORTEMENT EXACT :
-                // Mosaïque = Ouvrir en grand direct (Lightbox)
-                // Confort = Ouvrir Inspecteur IA
                 if (modeAffichage === 'small') {
                     ouvrirDiaporamaDirect(indexInspecteur, liste);
                 } else {
@@ -299,7 +416,16 @@
 
     function ouvrirDiaporamaDirect(index, list) {
         indexInspecteur = index;
-        lbImg.src = list[indexInspecteur].urlImage;
+        const photo = list[indexInspecteur];
+        const estVideo = photo.typeMedia === 'video' || (photo.urlImage && photo.urlImage.match(/\.(mp4|mov|webm)$/i));
+
+        lbContainer.innerHTML = '';
+        if (estVideo) {
+            lbContainer.innerHTML = `<video src="${photo.urlImage}" controls autoplay></video>`;
+        } else {
+            lbContainer.innerHTML = `<img src="${photo.urlImage}">`;
+        }
+
         lbFullscreen.style.display = 'flex';
     }
 
@@ -307,9 +433,20 @@
         indexInspecteur = index;
         const photo = list[indexInspecteur];
 
-        document.getElementById('modalImg').src = photo.urlImage;
+        const colMedia = document.getElementById('modalMediaCol');
+        const estVideo = photo.typeMedia === 'video' || (photo.urlImage && photo.urlImage.match(/\.(mp4|mov|webm)$/i));
+
+        // Retirer ancien média s'il y en avait un
+        const oldMedia = colMedia.querySelector('img, video');
+        if (oldMedia) oldMedia.remove();
+
+        const mediaEl = estVideo ? document.createElement('video') : document.createElement('img');
+        mediaEl.src = photo.urlImage;
+        if (estVideo) mediaEl.controls = true;
+        colMedia.insertBefore(mediaEl, colMedia.firstChild);
+
         document.getElementById('modalTitle').innerText = photo.titre || "Fichier sans titre";
-        document.getElementById('modalDesc').innerText = photo.description || "";
+        document.getElementById('modalDesc').innerText = photo.description || "Aucune note ajoutée.";
         
         const tagsContainer = document.getElementById('modalTags');
         tagsContainer.innerHTML = '';
@@ -319,12 +456,37 @@
         if (photo.suggestionInstagram) {
             modalInsta.innerText = photo.suggestionInstagram;
             document.getElementById('instaSection').style.display = 'block';
-        } else document.getElementById('instaSection').style.display = 'none';
+        } else {
+            document.getElementById('instaSection').style.display = 'none';
+        }
+
+        // COMMENTAIRES
+        afficherCommentairesModal(photo.commentaires || []);
 
         modal.style.display = 'flex';
 
-        document.getElementById('btnDownloadSingle').onclick = async () => {
-            const a = document.createElement('a'); a.href = photo.urlImage; a.download = 'photo.jpg'; a.click();
+        // ACCIONS MODAL
+        document.getElementById('btnSendComment').onclick = async () => {
+            const commentInput = document.getElementById('commentInput');
+            const texte = commentInput.value.trim();
+            if (!texte) return;
+
+            const res = await fetch(`/api/photos/${photo._id}/comment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ texte })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                photo.commentaires = data.commentaires;
+                afficherCommentairesModal(photo.commentaires);
+                commentInput.value = '';
+            }
+        };
+
+        document.getElementById('btnDownloadSingle').onclick = () => {
+            const a = document.createElement('a'); a.href = photo.urlImage; a.download = 'fichier'; a.click();
         };
 
         document.getElementById('btnSetCover').onclick = async () => {
@@ -332,22 +494,45 @@
             alert("📸 Définie comme couverture !");
         };
 
-        document.getElementById('btnCopy').onclick = () => { navigator.clipboard.writeText(photo.suggestionInstagram); alert("📋 Copié !"); };
+        document.getElementById('btnCopyInsta').onclick = () => {
+            navigator.clipboard.writeText(photo.suggestionInstagram || "");
+            alert("📋 Légende copiée !");
+        };
+    }
+
+    function afficherCommentairesModal(comments) {
+        const box = document.getElementById('commentsBox');
+        box.innerHTML = '';
+        if (!comments || comments.length === 0) {
+            box.innerHTML = "<p style='font-size:11px; color:var(--text-light); font-style:italic;'>Aucun commentaire pour l'instant.</p>";
+            return;
+        }
+        comments.forEach(c => {
+            box.innerHTML += `
+                <div class="comment-item">
+                    <div class="comment-author">${c.auteur}</div>
+                    <div>${c.texte}</div>
+                </div>
+            `;
+        });
     }
 
     function naviguerDiaporama(dir) {
         indexInspecteur += dir;
-        if (indexInspecteur >= toutesLesPhotos.length) indexInspecteur = 0;
-        if (indexInspecteur < 0) indexInspecteur = toutesLesPhotos.length - 1;
-        lbImg.src = toutesLesPhotos[indexInspecteur].urlImage;
+        if (indexInspecteur >= photosFiltrees.length) indexInspecteur = 0;
+        if (indexInspecteur < 0) indexInspecteur = photosFiltrees.length - 1;
+        ouvrirDiaporamaDirect(indexInspecteur, photosFiltrees);
     }
 
-    // BOUTONS DE FERMETURE
     document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
     document.getElementById('closeLightbox').onclick = () => lbFullscreen.style.display = 'none';
     document.getElementById('nextLightbox').onclick = () => naviguerDiaporama(1);
     document.getElementById('prevLightbox').onclick = () => naviguerDiaporama(-1);
-    document.getElementById('btnLaunchSlideshow').onclick = () => { modal.style.display = 'none'; lbImg.src = toutesLesPhotos[indexInspecteur].urlImage; lbFullscreen.style.display = 'flex'; };
+
+    document.getElementById('btnLaunchSlideshow').onclick = () => {
+        modal.style.display = 'none';
+        ouvrirDiaporamaDirect(indexInspecteur, photosFiltrees);
+    };
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') { modal.style.display = 'none'; lbFullscreen.style.display = 'none'; }
@@ -386,19 +571,6 @@
             if (!titre) return;
             await fetch('/api/albums/create', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ titre, parentAlbum: albumId }) });
             window.location.reload();
-        };
-    }
-
-    function configurerGlobaux() {
-        document.getElementById('btnDownloadAll').onclick = async () => {
-            const zip = new JSZip();
-            for (let i = 0; i < toutesLesPhotos.length; i++) {
-                const res = await fetch(toutesLesPhotos[i].urlImage);
-                const blob = await res.blob();
-                zip.file(`photo_${i+1}.jpg`, blob);
-            }
-            const content = await zip.generateAsync({ type: "blob" });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(content); a.download = 'collection.zip'; a.click();
         };
     }
 

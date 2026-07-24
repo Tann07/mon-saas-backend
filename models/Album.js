@@ -17,6 +17,7 @@ const albumSchema = new mongoose.Schema({
     statut: { type: String, default: "prive" },
     codePartage: { type: String, unique: true, sparse: true },
     codePIN: { type: String, default: "" },
+    collaborateurs: [{ type: String }],
     
     // 🎨 Visuel & Collaboration
     photoCouverture: { type: String, default: "" },

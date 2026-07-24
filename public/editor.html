@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script>
+        (function() {
+            const token = localStorage.getItem('monBadgePhoto');
+            if (!token) {
+                window.location.replace('/index.html');
+            }
+        })();
+    </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Studio Retouche Pro & Darkroom — Creative Suite</title>
